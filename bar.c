@@ -1,0 +1,117 @@
+
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include "bar.h"
+#include "curses.h"
+
+
+int main(int argc, char* argv[]){
+
+  for (int i = 1; i < argc; i++) {
+    if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0) {
+      get_helped();
+    } else if (strcmp(argv[i], "--version") == 0) {
+      version();
+    }
+  }
+
+  if(argc != 2){
+    get_helped();
+  }
+  // check file
+
+  int rows = 0;
+  int cols = 0;
+  int size_cache = 0;
+  quit_counter = 0;
+
+  getmaxyx(stdscr, rows, cols);
+  size_cache = check_size();
+
+  bar_borders(white);
+
+  while(1){
+    bar_load();
+    check_size();
+    key();
+    usleep(40000);
+  }
+
+  return 0;
+}
+
+void launch_window(){
+  initscr();
+  start_color();
+  use_default_colors();
+  init_pair(black, COLOR_BLACK, -1);
+  init_pair(red, COLOR_RED, -1);
+  init_pair(green, COLOR_GREEN, -1);
+  init_pair(yellow, COLOR_YELLOW, -1);
+  init_pair(blue, COLOR_BLUE, -1);
+  init_pair(magenta, COLOR_MAGENTA, -1);
+  init_pair(cyan, COLOR_CYAN, -1);
+  init_pair(white, COLOR_WHITE, -1);
+
+  init_pair(white_black, COLOR_WHITE, COLOR_BLACK);
+  init_pair(black_red, COLOR_BLACK, COLOR_RED);
+  init_pair(black_green, COLOR_BLACK, COLOR_GREEN);
+  init_pair(black_yellow, COLOR_BLACK, COLOR_YELLOW);
+  init_pair(black_blue, COLOR_BLACK, COLOR_BLUE);
+  init_pair(black_magenta, COLOR_BLACK, COLOR_MAGENTA);
+  init_pair(black_cyan, COLOR_BLACK, COLOR_CYAN);
+  init_pair(black_white, COLOR_BLACK, COLOR_WHITE);
+
+  init_pair(white_blackd, COLOR_WHITE, COLOR_BLACK);
+  init_pair(red_black, COLOR_RED, COLOR_BLACK);
+  init_pair(green_black, COLOR_GREEN, COLOR_BLACK);
+  init_pair(yellow_black, COLOR_YELLOW, COLOR_BLACK);
+  init_pair(blue_black, COLOR_BLUE, COLOR_BLACK);
+  init_pair(magenta_black, COLOR_MAGENTA, COLOR_BLACK);
+  init_pair(cyan_black, COLOR_CYAN, COLOR_BLACK);
+  init_pair(black_whited, COLOR_WHITE, COLOR_BLACK);
+
+  cbreak();
+  noecho();
+  nodelay(stdscr, TRUE);
+  keypad(stdscr, TRUE);
+  curs_set(FALSE);
+  clear();
+ 
+}
+
+void version(){
+  printf("%s %s \n", PROGRAM_NAME, PROGRAM_VERSION);
+  exit(0);
+}
+
+void get_helped(){
+  printf("Usage: %s [INPUT_FILE]\n\n", "bar");
+  printf("echo single-line STRINGS to INPUT_FILE followed by INT to display load percentage in this program\n\n");
+  printf("Visit \x1b[31mhakipaks.org/snippets\x1b[0m for detailed docs\n\n");
+  printf("  --help, -h      Get helped\n");
+  printf("  -v, --version   Get version\n");
+  exit(0);
+}
+
+void bar_borders(int c){
+  return;
+}
+
+int check_size(){
+  return 0;
+}
+
+void bar_load(){
+  return;
+}
+
+int key(){
+
+}
+
+void _quit(){
+
+}
