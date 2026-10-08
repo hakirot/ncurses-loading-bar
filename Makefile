@@ -8,15 +8,15 @@ OBJ = $(SRC:.c=.o)
 CC			= gcc
 LINK    = gcc
 LFLAGS  = -lncursesw -DNCURSES_WIDECHAR=1
-TARGET  = bar
+TARGET  = loading-bar
 
-all: bar
+all: loading-bar
 
-bar: $(OBJ)
+loading-bar: $(OBJ)
 	$(LINK) $(LFLAGS) -o $(TARGET) $(OBJ)
 
 clean:
-	rm -f bar $(OBJ)
+	rm -f $(TARGET) $(OBJ)
 
 bar.o: bar.c bar.h
 	$(CC) -c -o bar.o bar.c

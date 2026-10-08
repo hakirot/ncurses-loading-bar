@@ -20,7 +20,9 @@ int main(int argc, char* argv[]){
   if(argc != 2){
     get_helped();
   }
-  // check file
+
+  char input_file[256] = {'\0'};
+  FILE *file = fopen(input_file, "r");
 
   int rows = 0;
   int cols = 0;
