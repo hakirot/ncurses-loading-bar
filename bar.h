@@ -49,5 +49,6 @@ int check_size(screen * main_screen);
 void load_bar();
 int key();
 void _quit();
+void crit(char * err);
 
 #endif

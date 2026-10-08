@@ -31,11 +31,14 @@ int main(int argc, char* argv[]){
   m_screen.cache = 0;
   quit_counter = 0;
 
-  check_size(&m_screen);
-
   setlocale(LC_ALL, "");
   launch_window();
+  check_size(&m_screen);
   bar_borders(white, &m_screen);
+
+//char err[128];
+//sprintf(err, "%d", m_screen.rows);
+//crit(err);
 
   while(1){
     load_bar();
@@ -102,17 +105,17 @@ void get_helped(){
 }
 
 void bar_borders(int c, screen* m_screen){
-  mvprintw(0, 0, "rows: %d cols: %d", m_screen->rows, m_screen->rows);
+  mvprintw(0, 0, "rows: %d cols: %d", m_screen->rows, m_screen->cols);
   wchar_t wc = MenuBorder[0];
   cchar_t cchar;
   setcchar(&cchar, &wc, 0, 0, NULL);
   mvadd_wch(m_screen->rows/2 - 1, 1, &cchar);
 
-  int dim_x = m_screen->rows - 2;
+  int dim_x = m_screen->cols - 2;
 
   wc = MenuBorder[1];
   setcchar(&cchar, &wc, 0, 0, NULL);
-  mvadd_wch(m_screen->rows/2 - 1, m_screen->rows -1,  &cchar);
+  mvadd_wch(m_screen->rows/2 - 1, m_screen->cols-2,  &cchar);
 
   wc = MenuBorder[2];
   setcchar(&cchar, &wc, 0, 0, NULL);
@@ -120,7 +123,7 @@ void bar_borders(int c, screen* m_screen){
 
   wc = MenuBorder[3];
   setcchar(&cchar, &wc, 0, 0, NULL);
-  mvadd_wch(m_screen->rows/2 + 1, m_screen->rows - 1, &cchar);
+  mvadd_wch(m_screen->rows/2 + 1, m_screen->cols - 2, &cchar);
 
   wc = MenuBorder[4];
   setcchar(&cchar, &wc, 0, 0, NULL);
@@ -129,13 +132,19 @@ void bar_borders(int c, screen* m_screen){
     mvadd_wch(m_screen->rows/2 + 1, 1 + i, &cchar);
   }
 
+  attroff(COLOR_PAIR(c));
   wc = MenuBorder[5];
   setcchar(&cchar, &wc, 0, 0, NULL);
   for(int i = 1; i < 2; i++){
-    mvadd_wch(m_screen->rows/2 - 1, 1, &cchar);
-    mvadd_wch(m_screen->rows/2 + 1, 1, &cchar);
+    mvadd_wch(m_screen->rows/2, 1, &cchar);
+    mvadd_wch(m_screen->rows/2, m_screen->cols - 2, &cchar);
   }
   attroff(COLOR_PAIR(c));
+
+  refresh();
+  getchar();
+  crit("lawl");
+
 
   //_clear_menu(dim_y, dim_x, offset_y, offset_x);
   refresh();
@@ -143,8 +152,11 @@ void bar_borders(int c, screen* m_screen){
 }
 
 int check_size(screen * m_screen){
-  int rows, cols = 0;
+  int rows = 0;
+  int cols = 0;
+
   getmaxyx(stdscr, rows, cols);
+
   m_screen->rows = rows;
   m_screen->cols = cols;
   return m_screen->rows + m_screen->cols;
@@ -159,7 +171,7 @@ int key(){
 }
 
 void _quit(){
-
+  exit(0);
 }
 
 void crit(char * err) {
