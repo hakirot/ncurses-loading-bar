@@ -142,12 +142,6 @@ void bar_borders(int c, screen* m_screen){
   attroff(COLOR_PAIR(c));
 
   refresh();
-  getchar();
-  crit("lawl");
-
-
-  //_clear_menu(dim_y, dim_x, offset_y, offset_x);
-  refresh();
   return;
 }
 
