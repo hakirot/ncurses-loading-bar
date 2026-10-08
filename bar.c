@@ -1,11 +1,12 @@
 
+#include <ncurses.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <locale.h>
 #include "bar.h"
-#include "curses.h"
-
+#include "ncurses.h"
 
 int main(int argc, char* argv[]){
 
@@ -24,19 +25,21 @@ int main(int argc, char* argv[]){
   char input_file[256] = {'\0'};
   FILE *file = fopen(input_file, "r");
 
-  int rows = 0;
-  int cols = 0;
-  int size_cache = 0;
+  screen m_screen;
+  m_screen.rows = 0;
+  m_screen.cols = 0;
+  m_screen.cache = 0;
   quit_counter = 0;
 
-  getmaxyx(stdscr, rows, cols);
-  size_cache = check_size();
+  check_size(&m_screen);
 
-  bar_borders(white);
+  setlocale(LC_ALL, "");
+  launch_window();
+  bar_borders(white, &m_screen);
 
   while(1){
-    bar_load();
-    check_size();
+    load_bar();
+    check_size(&m_screen);
     key();
     usleep(40000);
   }
@@ -98,15 +101,56 @@ void get_helped(){
   exit(0);
 }
 
-void bar_borders(int c){
+void bar_borders(int c, screen* m_screen){
+  mvprintw(0, 0, "rows: %d cols: %d", m_screen->rows, m_screen->rows);
+  wchar_t wc = MenuBorder[0];
+  cchar_t cchar;
+  setcchar(&cchar, &wc, 0, 0, NULL);
+  mvadd_wch(m_screen->rows/2 - 1, 1, &cchar);
+
+  int dim_x = m_screen->rows - 2;
+
+  wc = MenuBorder[1];
+  setcchar(&cchar, &wc, 0, 0, NULL);
+  mvadd_wch(m_screen->rows/2 - 1, m_screen->rows -1,  &cchar);
+
+  wc = MenuBorder[2];
+  setcchar(&cchar, &wc, 0, 0, NULL);
+  mvadd_wch(m_screen->rows/2 + 1, 1, &cchar);
+
+  wc = MenuBorder[3];
+  setcchar(&cchar, &wc, 0, 0, NULL);
+  mvadd_wch(m_screen->rows/2 + 1, m_screen->rows - 1, &cchar);
+
+  wc = MenuBorder[4];
+  setcchar(&cchar, &wc, 0, 0, NULL);
+  for(int i = 1; i < dim_x - 1; i++){
+    mvadd_wch(m_screen->rows/2 - 1, 1 + i, &cchar);
+    mvadd_wch(m_screen->rows/2 + 1, 1 + i, &cchar);
+  }
+
+  wc = MenuBorder[5];
+  setcchar(&cchar, &wc, 0, 0, NULL);
+  for(int i = 1; i < 2; i++){
+    mvadd_wch(m_screen->rows/2 - 1, 1, &cchar);
+    mvadd_wch(m_screen->rows/2 + 1, 1, &cchar);
+  }
+  attroff(COLOR_PAIR(c));
+
+  //_clear_menu(dim_y, dim_x, offset_y, offset_x);
+  refresh();
   return;
 }
 
-int check_size(){
-  return 0;
+int check_size(screen * m_screen){
+  int rows, cols = 0;
+  getmaxyx(stdscr, rows, cols);
+  m_screen->rows = rows;
+  m_screen->cols = cols;
+  return m_screen->rows + m_screen->cols;
 }
 
-void bar_load(){
+void load_bar(){
   return;
 }
 
@@ -116,4 +160,10 @@ int key(){
 
 void _quit(){
 
+}
+
+void crit(char * err) {
+  endwin();
+  printf("\x1b[31m%s\n\x1b[0m", err);
+  _quit();
 }

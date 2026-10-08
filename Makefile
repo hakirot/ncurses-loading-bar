@@ -19,5 +19,5 @@ clean:
 	rm -f $(TARGET) $(OBJ)
 
 bar.o: bar.c bar.h
-	$(CC) -c -o bar.o bar.c
+	$(CC) $(LFLAGS) -c -o bar.o bar.c
 

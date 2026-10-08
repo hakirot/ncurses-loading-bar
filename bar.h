@@ -1,8 +1,8 @@
 #define PROGRAM_NAME "ncurses-loading-bar"
 #define PROGRAM_VERSION "0.1.0"
 
-#ifndef CONFIG_H
-#define CONFIG_H
+#ifndef BAR_H
+#define BAR_H
 #include "wchar.h"
 
 #define black           1
@@ -30,6 +30,12 @@
 #define cyan_black      23
 #define black_whited    24
 
+typedef struct {
+  int rows;
+  int cols;
+  int cache;
+} screen;
+
 const wchar_t MenuBorder[] =   L"┌┐└┘─│";
 wchar_t block = L'\u2588';
 int quit_counter;
@@ -38,9 +44,9 @@ void get_helped();
 void launch_window();
 void version();
 void get_helped();
-void bar_borders(int c);
-int check_size();
-void bar_load();
+void bar_borders(int c, screen * m_screen);
+int check_size(screen * main_screen);
+void load_bar();
 int key();
 void _quit();
 
