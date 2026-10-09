@@ -40,6 +40,9 @@ const wchar_t MenuBorder[] =   L"┌┐└┘─│";
 wchar_t block = L'\u2588';
 int quit_counter;
 
+char SLAP_STR[256];
+int PERC;
+
 void get_helped();
 void launch_window();
 void version();
@@ -51,5 +54,6 @@ void show_progress(screen* m_screen, int len);
 int key();
 void _quit();
 void crit(char * err);
+void slap(char * slap_msg);
 
 #endif

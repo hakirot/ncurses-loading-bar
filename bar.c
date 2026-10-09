@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <locale.h>
+#include <time.h>
 #include "bar.h"
 #include "ncurses.h"
 
@@ -16,10 +17,6 @@ int main(int argc, char* argv[]){
     } else if (strcmp(argv[i], "--version") == 0) {
       version();
     }
-  }
-
-  if(argc != 2){
-    get_helped();
   }
 
   char input_file[256] = {'\0'};
@@ -154,12 +151,33 @@ int check_size(screen * m_screen){
 
 void load_bar(screen* m_screen){
   // get line
+  char *input = NULL;
+  size_t size;
+  if (getline(&input, &size, stdin) == -1) {
+    return;
+  }
+
   // trim trailing newling if applicable
+  char line[256]= "\0"; 
+  strncpy(line, input, 256);
+  line[strlen(line)] = '\0';
+
+  int lead_char = line[0];
+  if(lead_char > 47 && lead_char < 58){
+    if (strlen(line) > 2){
+      char err[128];
+      sprintf(err, "%s %s", "NUMBER ERROR", "line");
+      slap(err);
+      return;
+    }
+
+    int percentage = atoi(line);
+
+    show_progress(m_screen, percentage);
+  }
+
   // discerne whether number or message
   // if string[0] is in number range on ascii chart
-    // int len = strlen(line);
-    // if strlen > 2 slap (error in number range)
-    // show_progress(screen* m_screen, len);
   // else load_message()
   return;
 }
@@ -180,4 +198,27 @@ void crit(char * err) {
   endwin();
   printf("\x1b[31m%s\n\x1b[0m", err);
   _quit();
+}
+
+void slap(char * slap_msg) {
+  mvprintw(0, 0, "%s", slap_msg);
+  memset(SLAP_STR, 0, 256 * sizeof(char));
+  strncpy(SLAP_STR, slap_msg, 256);
+  gettimeofday(&slap_time, NULL);
+}
+
+int _slap_timer() {
+  struct timeval t2;
+  double elapsed_time;
+  gettimeofday(&t2, NULL);
+
+  elapsed_time = (t2.tv_sec - slap_time.tv_sec) * 1000.0;
+
+  int slap_display_time = 1750;
+  if(elapsed_time > slap_display_time){
+    memset(SLAP_STR, 0, 256 * sizeof(char));
+    return 1;
+  } else {
+    return 0;
+  }
 }
