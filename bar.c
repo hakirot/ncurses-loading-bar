@@ -36,12 +36,8 @@ int main(int argc, char* argv[]){
   check_size(&m_screen);
   bar_borders(white, &m_screen);
 
-//char err[128];
-//sprintf(err, "%d", m_screen.rows);
-//crit(err);
-
   while(1){
-    load_bar();
+    load_bar(&m_screen);
     check_size(&m_screen);
     key();
     usleep(40000);
@@ -156,8 +152,20 @@ int check_size(screen * m_screen){
   return m_screen->rows + m_screen->cols;
 }
 
-void load_bar(){
+void load_bar(screen* m_screen){
+  // get line
+  // trim trailing newling if applicable
+  // discerne whether number or message
+  // if string[0] is in number range on ascii chart
+    // int len = strlen(line);
+    // if strlen > 2 slap (error in number range)
+    // show_progress(screen* m_screen, len);
+  // else load_message()
   return;
+}
+
+void show_progress(screen* m_screen, int len){
+
 }
 
 int key(){
