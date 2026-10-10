@@ -7,10 +7,13 @@
 #include <locale.h>
 #include <time.h>
 #include <sys/time.h>
+#include <fcntl.h>
+#include <unistd.h>
 #include "bar.h"
 #include "ncurses.h"
 
 int DEBUG_FLAG = 0;
+int ROUNDABOUT = 0;
 
 int main(int argc, char* argv[]){
 
@@ -35,14 +38,33 @@ int main(int argc, char* argv[]){
   check_size(&m_screen);
   bar_borders(white, &m_screen);
 
+  int fd = open("load_pipe", O_RDWR);
+  if (fd == -1) {
+      perror("open");
+      return 1;
+  }
+
+  FILE *pipe = fdopen(fd, "r");
+  if (pipe == NULL) {
+      perror("fdopen");
+      close(fd);
+      return 1;
+  }
+
   while(1){
 
     check_size(&m_screen);
-    process_stdin(&m_screen);
+    process_stdin(&m_screen, pipe);
     key();
 
     usleep(40000);
-    if(DEBUG_FLAG == 1) crit("debug_flag");
+
+//  if(DEBUG_FLAG > 2){
+//    char err[128];
+//    sprintf(err, "%d", DEBUG_FLAG);
+//    crit(err);
+//  }
+
   }
 
   return 0;
@@ -104,7 +126,7 @@ void get_helped(){
 
 void bar_borders(int c, screen* m_screen){
   clear();
-  mvprintw(0, 0, "rows: %d cols: %d", m_screen->rows, m_screen->cols);
+//mvprintw(0, 0, "rows: %d cols: %d", m_screen->rows, m_screen->cols);
   wchar_t wc = MenuBorder[0];
   cchar_t cchar;
   setcchar(&cchar, &wc, 0, 0, NULL);
@@ -158,18 +180,30 @@ void check_size(screen * m_screen){
   }
 }
 
-void process_stdin(screen* m_screen){
-
-//if(DEBUG_FLAG == 1) crit("debug_flag_process");
+void process_stdin(screen* m_screen, FILE * pipe){
 
   char *input = (char *)malloc(256 * sizeof(char));
   memset(input, '\0', 256 * sizeof(char));
 
   size_t size;
-  if (getline(&input, &size, stdin) == 0){
-    crit("bad read?");
-    free(input);
-    return;
+  fgets(input, 256, pipe);
+
+//if(feof(stdin)){
+//  crit("end-of-line");
+//}
+
+//if ((int)strlen(input) == 0){
+//  free(input);
+//  return;
+//}
+
+  if(DEBUG_FLAG == 2){
+    if(ROUNDABOUT == 50){
+//    char err[128];
+//    sprintf(err, "%s", input);
+      crit("ROUNDABOUT");
+    }
+    ROUNDABOUT++;
   }
 
   if(size < 0){
@@ -217,6 +251,8 @@ void process_stdin(screen* m_screen){
     load_message(m_screen, line);
     reprint(m_screen);
   }
+
+//if(DEBUG_FLAG > 2) crit("greater 2");
 
   free(input);
   return;
