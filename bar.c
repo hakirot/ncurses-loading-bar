@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <locale.h>
 #include <time.h>
+#include <sys/time.h>
 #include "bar.h"
 #include "ncurses.h"
 
@@ -19,13 +20,12 @@ int main(int argc, char* argv[]){
     }
   }
 
-  char input_file[256] = {'\0'};
-  FILE *file = fopen(input_file, "r");
-
   screen m_screen;
   m_screen.rows = 0;
   m_screen.cols = 0;
   m_screen.cache = 0;
+  m_screen.num_bars = 0;
+  strncpy(m_screen.message, "Initializing loading bar", 256);
   quit_counter = 0;
 
   setlocale(LC_ALL, "");
@@ -34,9 +34,11 @@ int main(int argc, char* argv[]){
   bar_borders(white, &m_screen);
 
   while(1){
-    load_bar(&m_screen);
+
     check_size(&m_screen);
+    process_stdin(&m_screen);
     key();
+
     usleep(40000);
   }
 
@@ -98,6 +100,7 @@ void get_helped(){
 }
 
 void bar_borders(int c, screen* m_screen){
+  clear();
   mvprintw(0, 0, "rows: %d cols: %d", m_screen->rows, m_screen->cols);
   wchar_t wc = MenuBorder[0];
   cchar_t cchar;
@@ -144,46 +147,70 @@ int check_size(screen * m_screen){
 
   getmaxyx(stdscr, rows, cols);
 
-  m_screen->rows = rows;
-  m_screen->cols = cols;
-  return m_screen->rows + m_screen->cols;
+  if(m_screen->cache != rows + cols) {
+    m_screen->rows = rows;
+    m_screen->cols = cols;
+    bar_borders(white, m_screen);
+  }
+
+  return rows + cols;
 }
 
-void load_bar(screen* m_screen){
-  // get line
+void process_stdin(screen* m_screen){
+
   char *input = NULL;
   size_t size;
   if (getline(&input, &size, stdin) == -1) {
     return;
   }
 
-  // trim trailing newling if applicable
-  char line[256]= "\0"; 
+  reprint(m_screen);
+
+  char line[256] = {"\0"}; 
   strncpy(line, input, 256);
   line[strlen(line)] = '\0';
 
   int lead_char = line[0];
   if(lead_char > 47 && lead_char < 58){
+
     if (strlen(line) > 2){
       char err[128];
-      sprintf(err, "%s %s", "NUMBER ERROR", "line");
+      sprintf(err, "%s %s", "NUMBER ERROR", line);
       slap(err);
       return;
     }
 
-    int percentage = atoi(line);
+    for(int i = 0; i < (int)strlen(line); i++){
+      if (line[i] < 48 || line[i] > 57){
+        char err[128];
+        sprintf(err, "%s %s", "NUMBER ERROR", line);
+        slap(err);
+        return;
+      }
+    }
 
-    show_progress(m_screen, percentage);
+    PERCENTAGE = atoi(line);
+
+    update_progress(m_screen);
+
+  } else {
+    load_message(m_screen, line);
   }
 
-  // discerne whether number or message
-  // if string[0] is in number range on ascii chart
-  // else load_message()
   return;
 }
 
-void show_progress(screen* m_screen, int len){
+void update_progress(screen* m_screen){
+  int num_available_bars = m_screen->cols - 4;
+  float bar_percentage = (float)PERCENTAGE/100;
+  int num_progress_bars = num_available_bars/(int)bar_percentage;
 
+  cchar_t cchar;
+  setcchar(&cchar, &block, 0, 0, NULL);
+
+  for(int i = 0; i < num_progress_bars; i++){
+    mvadd_wch(m_screen->rows/2, 2 + i,  &cchar);
+  }
 }
 
 int key(){
@@ -221,4 +248,12 @@ int _slap_timer() {
   } else {
     return 0;
   }
+}
+
+void load_message(screen * m_screen, char* line){
+  mvprintw(m_screen->rows/2 - 2, 2, "%s", line);
+}
+
+void reprint(screen* m_screen){
+  return;
 }

@@ -3,6 +3,7 @@
 
 #ifndef BAR_H
 #define BAR_H
+
 #include "wchar.h"
 
 #define black           1
@@ -34,6 +35,8 @@ typedef struct {
   int rows;
   int cols;
   int cache;
+  int num_bars;
+  char message[256];
 } screen;
 
 const wchar_t MenuBorder[] =   L"┌┐└┘─│";
@@ -41,7 +44,9 @@ wchar_t block = L'\u2588';
 int quit_counter;
 
 char SLAP_STR[256];
-int PERC;
+int PRINT_FLAG;
+int PERCENTAGE;
+struct timeval slap_time;
 
 void get_helped();
 void launch_window();
@@ -49,11 +54,13 @@ void version();
 void get_helped();
 void bar_borders(int c, screen * m_screen);
 int check_size(screen * m_screen);
-void load_bar(screen * m_screen);
-void show_progress(screen* m_screen, int len);
+void process_stdin(screen * m_screen);
+void load_message(screen * m_screen, char* line);
+void update_progress(screen* m_screen);
 int key();
 void _quit();
 void crit(char * err);
 void slap(char * slap_msg);
+void reprint(screen* m_screen);
 
 #endif
