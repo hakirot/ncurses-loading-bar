@@ -45,7 +45,6 @@ int quit_counter;
 
 char SLAP_STR[256];
 int PRINT_FLAG;
-int PERCENTAGE;
 struct timeval slap_time;
 
 void get_helped();
@@ -56,7 +55,7 @@ void bar_borders(int c, screen * m_screen);
 int check_size(screen * m_screen);
 void process_stdin(screen * m_screen);
 void load_message(screen * m_screen, char* line);
-void update_progress(screen* m_screen);
+void update_progress(screen* m_screen, int percentage);
 int key();
 void _quit();
 void crit(char * err);

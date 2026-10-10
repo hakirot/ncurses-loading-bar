@@ -189,28 +189,24 @@ void process_stdin(screen* m_screen){
       }
     }
 
-    PERCENTAGE = atoi(line);
+    int percentage = atoi(line);
 
-    update_progress(m_screen);
+    update_progress(m_screen, percentage);
 
   } else {
     load_message(m_screen, line);
   }
 
+  reprint(m_screen);
+
   return;
 }
 
-void update_progress(screen* m_screen){
+void update_progress(screen* m_screen, int percentage){
   int num_available_bars = m_screen->cols - 4;
-  float bar_percentage = (float)PERCENTAGE/100;
-  int num_progress_bars = num_available_bars/(int)bar_percentage;
-
-  cchar_t cchar;
-  setcchar(&cchar, &block, 0, 0, NULL);
-
-  for(int i = 0; i < num_progress_bars; i++){
-    mvadd_wch(m_screen->rows/2, 2 + i,  &cchar);
-  }
+  float bar_percentage = (float)percentage/100;
+  int num_progress_bars = (int)((float)num_available_bars*bar_percentage);
+  m_screen->num_bars = num_progress_bars;
 }
 
 int key(){
@@ -251,9 +247,21 @@ int _slap_timer() {
 }
 
 void load_message(screen * m_screen, char* line){
-  mvprintw(m_screen->rows/2 - 2, 2, "%s", line);
+  strncpy(m_screen->message, line, 256);
 }
 
 void reprint(screen* m_screen){
+  clear();
+  bar_borders(white, m_screen);
+  mvprintw(m_screen->rows/2 - 2, 2, "%s", m_screen->message);
+
+  cchar_t cchar;
+  setcchar(&cchar, &block, 0, 0, NULL);
+
+  for(int i = 0; i < m_screen->num_bars; i++){
+    mvadd_wch(m_screen->rows/2, 2 + i,  &cchar);
+  }
+  refresh();
+
   return;
 }
