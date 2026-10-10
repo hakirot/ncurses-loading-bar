@@ -12,9 +12,6 @@
 #include "bar.h"
 #include "ncurses.h"
 
-int DEBUG_FLAG = 0;
-int ROUNDABOUT = 0;
-
 int main(int argc, char* argv[]){
 
   for (int i = 1; i < argc; i++) {
@@ -57,14 +54,7 @@ int main(int argc, char* argv[]){
     process_stdin(&m_screen, pipe);
     key();
 
-    usleep(40000);
-
-//  if(DEBUG_FLAG > 2){
-//    char err[128];
-//    sprintf(err, "%d", DEBUG_FLAG);
-//    crit(err);
-//  }
-
+    usleep(20000);
   }
 
   return 0;
@@ -188,24 +178,6 @@ void process_stdin(screen* m_screen, FILE * pipe){
   size_t size;
   fgets(input, 256, pipe);
 
-//if(feof(stdin)){
-//  crit("end-of-line");
-//}
-
-//if ((int)strlen(input) == 0){
-//  free(input);
-//  return;
-//}
-
-  if(DEBUG_FLAG == 2){
-    if(ROUNDABOUT == 50){
-//    char err[128];
-//    sprintf(err, "%s", input);
-      crit("ROUNDABOUT");
-    }
-    ROUNDABOUT++;
-  }
-
   if(size < 0){
     free(input);
     crit("bad data?");
@@ -221,6 +193,10 @@ void process_stdin(screen* m_screen, FILE * pipe){
   if(lead_char > 47 && lead_char < 58){
 
     if (strlen(line) > 2){
+
+      if(strncmp("100", line, strlen(line)) == 0){
+        crit("END");
+      }
 
       crit("err_1");
 
@@ -251,8 +227,6 @@ void process_stdin(screen* m_screen, FILE * pipe){
     load_message(m_screen, line);
     reprint(m_screen);
   }
-
-//if(DEBUG_FLAG > 2) crit("greater 2");
 
   free(input);
   return;
@@ -319,6 +293,5 @@ void reprint(screen* m_screen){
   }
   refresh();
 
-  DEBUG_FLAG++;
   return;
 }

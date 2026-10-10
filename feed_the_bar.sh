@@ -5,10 +5,10 @@ iterations=100
 seconds=3
 load=0
 while [ $iterations -gt 0 ]; do
-  echo "hello ${load}" > ./load_pipe
-  sleep .05
+  echo "CONFIGURING ${load}" > ./load_pipe
+  sleep .01
   echo "${load}" > ./load_pipe
-  sleep .05
+  sleep .01
   load=$((load + 1))
   iterations=$((iterations - 1))
 done

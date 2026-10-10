@@ -46,8 +46,6 @@ int quit_counter;
 char SLAP_STR[256];
 int PRINT_FLAG;
 struct timeval slap_time;
-int DEBUG_FLAG;
-int ROUNDABOUT;
 
 void get_helped();
 void launch_window();
