@@ -46,13 +46,14 @@ int quit_counter;
 char SLAP_STR[256];
 int PRINT_FLAG;
 struct timeval slap_time;
+int DEBUG_FLAG;
 
 void get_helped();
 void launch_window();
 void version();
 void get_helped();
 void bar_borders(int c, screen * m_screen);
-int check_size(screen * m_screen);
+void check_size(screen * m_screen);
 void process_stdin(screen * m_screen);
 void load_message(screen * m_screen, char* line);
 void update_progress(screen* m_screen, int percentage);

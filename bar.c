@@ -10,6 +10,8 @@
 #include "bar.h"
 #include "ncurses.h"
 
+int DEBUG_FLAG = 0;
+
 int main(int argc, char* argv[]){
 
   for (int i = 1; i < argc; i++) {
@@ -40,6 +42,7 @@ int main(int argc, char* argv[]){
     key();
 
     usleep(40000);
+    if(DEBUG_FLAG == 1) crit("debug_flag");
   }
 
   return 0;
@@ -141,7 +144,7 @@ void bar_borders(int c, screen* m_screen){
   return;
 }
 
-int check_size(screen * m_screen){
+void check_size(screen * m_screen){
   int rows = 0;
   int cols = 0;
 
@@ -150,41 +153,57 @@ int check_size(screen * m_screen){
   if(m_screen->cache != rows + cols) {
     m_screen->rows = rows;
     m_screen->cols = cols;
-    bar_borders(white, m_screen);
+    m_screen->cache = rows + cols;
+    reprint(m_screen);
   }
-
-  return rows + cols;
 }
 
 void process_stdin(screen* m_screen){
 
-  char *input = NULL;
+//if(DEBUG_FLAG == 1) crit("debug_flag_process");
+
+  char *input = (char *)malloc(256 * sizeof(char));
+  memset(input, '\0', 256 * sizeof(char));
+
   size_t size;
-  if (getline(&input, &size, stdin) == -1) {
+  if (getline(&input, &size, stdin) == 0){
+    crit("bad read?");
+    free(input);
     return;
   }
 
-  reprint(m_screen);
+  if(size < 0){
+    free(input);
+    crit("bad data?");
+    return;
+  }
 
   char line[256] = {"\0"}; 
   strncpy(line, input, 256);
-  line[strlen(line)] = '\0';
+  line[strlen(line)-1] = '\0';
 
   int lead_char = line[0];
+
   if(lead_char > 47 && lead_char < 58){
 
     if (strlen(line) > 2){
+
+      crit("err_1");
+
       char err[128];
       sprintf(err, "%s %s", "NUMBER ERROR", line);
       slap(err);
+      free(input);
       return;
     }
 
     for(int i = 0; i < (int)strlen(line); i++){
       if (line[i] < 48 || line[i] > 57){
+        crit("err_2");
         char err[128];
         sprintf(err, "%s %s", "NUMBER ERROR", line);
         slap(err);
+        free(input);
         return;
       }
     }
@@ -192,13 +211,14 @@ void process_stdin(screen* m_screen){
     int percentage = atoi(line);
 
     update_progress(m_screen, percentage);
+    reprint(m_screen);
 
-  } else {
+  } else if(lead_char > 51) {
     load_message(m_screen, line);
+    reprint(m_screen);
   }
 
-  reprint(m_screen);
-
+  free(input);
   return;
 }
 
@@ -263,5 +283,6 @@ void reprint(screen* m_screen){
   }
   refresh();
 
+  DEBUG_FLAG++;
   return;
 }
