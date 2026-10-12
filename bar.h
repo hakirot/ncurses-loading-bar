@@ -37,6 +37,7 @@ typedef struct {
   int cache;
   int num_bars;
   char message[256];
+  char header[256];
 } screen;
 
 const wchar_t MenuBorder[] =   L"┌┐└┘─│";
@@ -61,5 +62,7 @@ void _quit();
 void crit(char * err);
 void slap(char * slap_msg);
 void reprint(screen* m_screen);
+void play_end(screen* m_screen);
+void load_header(screen* m_screen, char * line);
 
 #endif

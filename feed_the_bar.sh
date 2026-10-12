@@ -1,14 +1,22 @@
 #!/usr/bin/env bash
-pid=$(pgrep loading-bar)
-echo "${pid}"
+pipe_file=/tmp/load_pipe
 iterations=100
-seconds=3
 load=0
 while [ $iterations -gt 0 ]; do
-  echo "CONFIGURING ${load}" > ./load_pipe
+  if [ $iterations -eq 90 ]; then
+    echo "+INITIALIZING" > $pipe_file
+  elif [ $iterations -eq 60 ]; then
+    echo "+ALTERING" > $pipe_file
+  elif [ $iterations -eq 30 ]; then
+    echo "+FINISHING" > $pipe_file
+  fi
+  echo "CONFIGURING ${load}" > $pipe_file
   sleep .01
-  echo "${load}" > ./load_pipe
+  echo "${load}" > $pipe_file
   sleep .01
   load=$((load + 1))
   iterations=$((iterations - 1))
 done
+
+sleep 1
+echo "100" > $pipe_file

@@ -27,7 +27,8 @@ int main(int argc, char* argv[]){
   m_screen.cols = 0;
   m_screen.cache = 0;
   m_screen.num_bars = 0;
-  strncpy(m_screen.message, "Initializing loading bar", 256);
+  strncpy(m_screen.message, "Waiting for data from /tmp/load_pipe ..", 256);
+  strncpy(m_screen.header, "ncurses-loading-bar 0.1.0", 256);
   quit_counter = 0;
 
   setlocale(LC_ALL, "");
@@ -35,11 +36,16 @@ int main(int argc, char* argv[]){
   check_size(&m_screen);
   bar_borders(white, &m_screen);
 
-  int fd = open("load_pipe", O_RDWR);
-  if (fd == -1) {
-      perror("open");
-      return 1;
-  }
+//int fd = open("/tmp/load_pipe", O_RDWR);
+//if (fd == -1) {
+//    perror("open");
+//    return 1;
+//}
+  char pipe_path[128];
+  int pid = getpid();
+  sprintf(pipe_path, "%s%d", "/tmp/load_pipe", pid);
+
+  mkfifo("/tmp/load_pipe", 0666);
 
   FILE *pipe = fdopen(fd, "r");
   if (pipe == NULL) {
@@ -48,6 +54,7 @@ int main(int argc, char* argv[]){
       return 1;
   }
 
+  reprint(&m_screen);
   while(1){
 
     check_size(&m_screen);
@@ -102,6 +109,7 @@ void launch_window(){
 
 void version(){
   printf("%s %s \n", PROGRAM_NAME, PROGRAM_VERSION);
+  printf("%s \n", "Visit hakipaks.org/snippets#loading-bar for more details");
   exit(0);
 }
 
@@ -195,7 +203,7 @@ void process_stdin(screen* m_screen, FILE * pipe){
     if (strlen(line) > 2){
 
       if(strncmp("100", line, strlen(line)) == 0){
-        crit("END");
+        play_end(m_screen);
       }
 
       crit("err_1");
@@ -223,9 +231,14 @@ void process_stdin(screen* m_screen, FILE * pipe){
     update_progress(m_screen, percentage);
     reprint(m_screen);
 
+  } else if(lead_char == '+'){
+    load_header(m_screen, line);
   } else if(lead_char > 51) {
     load_message(m_screen, line);
     reprint(m_screen);
+  } else if(lead_char == '+'){
+    crit("+");
+    load_header(m_screen, line);
   }
 
   free(input);
@@ -244,6 +257,7 @@ int key(){
 }
 
 void _quit(){
+  endwin();
   exit(0);
 }
 
@@ -284,6 +298,7 @@ void reprint(screen* m_screen){
   clear();
   bar_borders(white, m_screen);
   mvprintw(m_screen->rows/2 - 2, 2, "%s", m_screen->message);
+  mvprintw(m_screen->rows/2 - 4, 2, "%s", m_screen->header);
 
   cchar_t cchar;
   setcchar(&cchar, &block, 0, 0, NULL);
@@ -294,4 +309,36 @@ void reprint(screen* m_screen){
   refresh();
 
   return;
+}
+
+void play_end(screen* m_screen){
+  clear();
+  refresh();
+  char * complete = "- = COMPLETE = -";
+  int flag = 0;
+  int num_frames = 15;
+  int sleep_time = 50000;
+
+  while (num_frames > 0) {
+
+    usleep(sleep_time);
+    if(flag == 0){
+      mvprintw(m_screen->rows/2 - 1, m_screen->cols/2 - strlen(complete)/2, "%s", complete);
+      flag++;
+    } else {
+      clear();
+      flag--;
+    }
+    refresh();
+    num_frames--;
+  }
+  mvprintw(m_screen->rows/2 - 1, m_screen->cols/2 - strlen(complete)/2, "%s", complete);
+  refresh();
+  usleep(500000);
+  _quit();
+}
+
+void load_header(screen* m_screen, char * line){
+  memmove(line, line+1, strlen(line));
+  strncpy(m_screen->header, line, 256);
 }
