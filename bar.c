@@ -6,11 +6,14 @@
 #include <unistd.h>
 #include <locale.h>
 #include <time.h>
-#include <sys/time.h>
 #include <fcntl.h>
-#include <unistd.h>
+#include <sys/time.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include "bar.h"
 #include "ncurses.h"
+
+char PIPE_PATH[64];
 
 int main(int argc, char* argv[]){
 
@@ -22,12 +25,17 @@ int main(int argc, char* argv[]){
     }
   }
 
+  int pid = getpid();
+  sprintf(PIPE_PATH, "%s%d", "/tmp/load_pipe", pid);
+
   screen m_screen;
   m_screen.rows = 0;
   m_screen.cols = 0;
   m_screen.cache = 0;
   m_screen.num_bars = 0;
-  strncpy(m_screen.message, "Waiting for data from /tmp/load_pipe ..", 256);
+  char message[256];
+  sprintf(message, "%s %s", "Waiting for data from", PIPE_PATH);
+  strncpy(m_screen.message, message, 256);
   strncpy(m_screen.header, "ncurses-loading-bar 0.1.0", 256);
   quit_counter = 0;
 
@@ -41,13 +49,16 @@ int main(int argc, char* argv[]){
 //    perror("open");
 //    return 1;
 //}
-  char pipe_path[128];
-  int pid = getpid();
-  sprintf(pipe_path, "%s%d", "/tmp/load_pipe", pid);
 
-  mkfifo("/tmp/load_pipe", 0666);
+  mkfifo(PIPE_PATH, 0666);
 
-  FILE *pipe = fdopen(fd, "r");
+  int fd = open(PIPE_PATH, O_RDWR);
+  if (fd == -1) {
+      perror("open");
+      return 1;
+  }
+
+  FILE *pipe = fdopen(fd, "r"); // ?
   if (pipe == NULL) {
       perror("fdopen");
       close(fd);
@@ -64,7 +75,7 @@ int main(int argc, char* argv[]){
     usleep(20000);
   }
 
-  return 0;
+  _quit();
 }
 
 void launch_window(){
@@ -257,6 +268,7 @@ int key(){
 }
 
 void _quit(){
+  remove(PIPE_PATH);
   endwin();
   exit(0);
 }
