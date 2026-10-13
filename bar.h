@@ -75,6 +75,7 @@ void  crit(            char  *         err                         );
 void  launch(          char  *  executable                         );
 void  handle_args(     int            argc, char  *         argv[], screen* m_screen );
 void  animate_log_open(screen*  m_screen);
+void  animate_close(   screen*  m_screen);
 off_t find_last_lines(int fd, size_t n);
 void  clear_log_box(int dim_y, int dim_x);
 int   key();

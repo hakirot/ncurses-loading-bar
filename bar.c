@@ -254,14 +254,12 @@ void log_borders(int c, screen* m_screen){
     mvadd_wch(m_screen->rows - 3, 1 + i, &cchar);
   }
 
-  attroff(COLOR_PAIR(c));
   wc = MenuBorder[5];
   setcchar(&cchar, &wc, 0, 0, NULL);
   for(int i = 0; i < m_screen->rows - 13; i++){
     mvadd_wch(10 + i, 1, &cchar);
     mvadd_wch(10 + i, dim_x, &cchar);
   }
-  attroff(COLOR_PAIR(c));
 
   refresh();
   return;
@@ -430,6 +428,8 @@ void play_end(screen* m_screen){
   int flag = 0;
   int num_frames = 15;
   int sleep_time = 50000;
+
+  animate_close(m_screen);
 
   while (num_frames > 0) {
 
@@ -757,4 +757,82 @@ void print_message(screen* m_screen){
 void print_header(screen* m_screen){
   mvprintw(1, 2, "%s", m_screen->header);
   refresh();
+}
+
+void animate_close(screen*  m_screen){
+
+  int rows, cols = 0;
+  getmaxyx(stdscr, rows, cols);
+  int sleep_time = 10000;
+
+  int dim_y = rows;
+  int dim_x = cols;
+
+  int delta = 0;
+
+  int r = 0;
+  int l = 0;
+  int u = 0;
+  int d = 0;
+
+  cchar_t cchar;
+  wchar_t wc;
+  while(rows/2 > delta){
+    clear();
+
+    dim_y = rows - (delta*2);
+    dim_x = cols - (delta*2);
+
+//  wc = MenuBorder[0];
+//  setcchar(&cchar, &wc, 0, 0, NULL);
+//  mvadd_wch(0 + delta, 0 + delta, &cchar);
+
+//  wc = MenuBorder[1];
+//  setcchar(&cchar, &wc, 0, 0, NULL);
+//  mvadd_wch(0 + delta, cols - 1 - delta, &cchar);
+
+//  wc = MenuBorder[2];
+//  setcchar(&cchar, &wc, 0, 0, NULL);
+//  mvadd_wch(rows - 1 - delta, 0 + delta, &cchar);
+
+//  wc = MenuBorder[3];
+//  setcchar(&cchar, &wc, 0, 0, NULL);
+//  mvadd_wch(rows - 1 - delta, cols - 1 - delta, &cchar);
+
+    wc = MenuBorder[4];
+    setcchar(&cchar, &wc, 0, 0, NULL);
+    for(int i = 1; i < dim_x - 1; i++){
+      mvadd_wch(0 + delta, 0 + i + delta, &cchar);
+      mvadd_wch(rows - 1 - delta, 0 + i + delta, &cchar);
+    }
+
+//  wc = MenuBorder[5];
+//  setcchar(&cchar, &wc, 0, 0, NULL);
+//  for(int i = 1; i < dim_y - 1; i++){
+//    mvadd_wch(0 + i + delta, 0 + delta, &cchar);
+//    mvadd_wch(0 + i + delta, cols - 1 - delta, &cchar);
+//  }
+
+    refresh();
+    usleep(sleep_time);
+    delta++;
+  }
+
+  clear();
+  wc = MenuBorder[4];
+  setcchar(&cchar, &wc, 0, 0, NULL);
+  for(int i = 0; i < cols - delta*2; i++){
+    mvadd_wch(rows/2, i + delta, &cchar);
+  }
+  refresh();
+  usleep(sleep_time);
+
+//getchar();
+  sleep_time = 1500;
+  for(int i = 0; i < cols/2; i++){
+    mvaddch(rows/2, i, ' ');
+    mvaddch(rows/2, cols-1-i, ' ');
+    refresh();
+    usleep(sleep_time);
+  }
 }

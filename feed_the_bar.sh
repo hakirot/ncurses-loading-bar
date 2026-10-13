@@ -14,6 +14,7 @@ while [ $iterations -gt 0 ]; do
 #   echo "OUTPUT 1"
   elif [ $iterations -eq 60 ]; then
     echo "+ALTERING" > $CONTROL_PIPE
+    echo "HOTMAMAJAMMAHOTMAMAJAMMAHOTMAMAJAMMAHOTMAMAJAMMAHOTMAMAJAMMAHOTMAMAJAMMAHOTMAMAJAMMA"
 #   echo "OUTPUT 2"
   elif [ $iterations -eq 30 ]; then
     echo "+FINISHING" > $CONTROL_PIPE
