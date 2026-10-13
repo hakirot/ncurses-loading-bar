@@ -53,8 +53,9 @@ int main(int argc, char* argv[]){
   launch_window(&m_screen);
   if(config.executable[0] != 0) launch(config.executable); // possible sleep
   if(config.input_log[0] != 0 && config.skip_log_startup == false) {
-    bar_borders(white, &m_screen);
+    //bar_borders(white, &m_screen);
     print_header(&m_screen);
+    print_message(&m_screen);
     animate_log_open(&m_screen);
   }
   reprint(&m_screen);
