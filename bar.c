@@ -52,9 +52,7 @@ int main(int argc, char* argv[]){
   launch_window();
   check_size(&m_screen);
   animate_log_open(&m_screen);
-  bar_borders(white, &m_screen);
-  // possible sleep
-  if(config.executable[0] != 0) launch(config.executable);
+  if(config.executable[0] != 0) launch(config.executable); // possible sleep
   reprint(&m_screen);
   while(1){
 
@@ -170,40 +168,39 @@ void bar_borders(int c, screen* m_screen){
 }
 
 void log_borders(int c, screen* m_screen){
-  clear();
 //mvprintw(0, 0, "rows: %d cols: %d", m_screen->rows, m_screen->cols);
   wchar_t wc = MenuBorder[0];
   cchar_t cchar;
   setcchar(&cchar, &wc, 0, 0, NULL);
-  mvadd_wch(7, 1, &cchar);
+  mvadd_wch(9, 1, &cchar);
 
   int dim_x = m_screen->cols - 2;
 
   wc = MenuBorder[1];
   setcchar(&cchar, &wc, 0, 0, NULL);
-  mvadd_wch(7, m_screen->cols-2,  &cchar);
+  mvadd_wch(9, m_screen->cols-2,  &cchar);
 
   wc = MenuBorder[2];
   setcchar(&cchar, &wc, 0, 0, NULL);
-  mvadd_wch(m_screen->rows, 1, &cchar);
+  mvadd_wch(m_screen->rows - 3, 1, &cchar);
 
   wc = MenuBorder[3];
   setcchar(&cchar, &wc, 0, 0, NULL);
-  mvadd_wch(m_screen->rows, m_screen->cols - 2, &cchar);
+  mvadd_wch(m_screen->rows - 3, m_screen->cols - 2, &cchar);
 
   wc = MenuBorder[4];
   setcchar(&cchar, &wc, 0, 0, NULL);
   for(int i = 1; i < dim_x - 1; i++){
-    mvadd_wch(7, 1 + i, &cchar);
-    mvadd_wch(m_screen->rows, 1 + i, &cchar);
+    mvadd_wch(9, 1 + i, &cchar);
+    mvadd_wch(m_screen->rows - 3, 1 + i, &cchar);
   }
 
   attroff(COLOR_PAIR(c));
   wc = MenuBorder[5];
   setcchar(&cchar, &wc, 0, 0, NULL);
-  for(int i = 0; i < m_screen->rows - 9; i++){
-    mvadd_wch(8 + i, 1, &cchar);
-    mvadd_wch(8 + i, dim_x + 1, &cchar);
+  for(int i = 0; i < m_screen->rows - 13; i++){
+    mvadd_wch(10 + i, 1, &cchar);
+    mvadd_wch(10 + i, dim_x, &cchar);
   }
   attroff(COLOR_PAIR(c));
 
@@ -351,6 +348,7 @@ void load_message(screen * m_screen, char* line){
 void reprint(screen* m_screen){
   clear();
   bar_borders(white, m_screen);
+  if(config.input_log[0] != 0) log_borders(white, m_screen);
   mvprintw(3, 2, "%s", m_screen->message);
   mvprintw(1, 2, "%s", m_screen->header);
 
@@ -512,24 +510,47 @@ void animate_log_open(screen* m_screen){
     return;
   }
    
-  int frame_sleep = 500000;
-  int log_low     = 7;
-  int log_high    = m_screen->rows;
-  int mid         = (log_high - log_low)/2 + 7;
+  int frame_sleep = 7000;
+  int log_low     = 8;
+  int log_high    = m_screen->rows - 2;
+  int dim_y       = log_high - log_low;
+  int mid         = (log_high - log_low)/2 + 8;
   int dim_x       = m_screen->cols - 2;
 
   wchar_t wc = MenuBorder[4];
   cchar_t cchar;
   setcchar(&cchar, &wc, 0, 0, NULL);
 
-  for(int i = 0; i < dim_x; i++){
-    mvadd_wch(mid, 1 + i, &cchar);
+  for(int i = 0; i < dim_x/2; i++){
+    for(int j = 0; j < i; j++){
+      mvadd_wch(mid, m_screen->cols/2 + j, &cchar);
+      mvadd_wch(mid, m_screen->cols/2 - j, &cchar);
+    }
+    refresh();
+    usleep(frame_sleep);
+    for(int j = 0; j < i; j++){
+      mvaddch(mid, m_screen->cols/2 + j, ' ');
+      mvaddch(mid, m_screen->cols/2 - j, ' ');
+    }
+    refresh();
+    usleep(frame_sleep);
+  }
+
+  frame_sleep = 10000;
+  for(int i = 0; i < dim_y/2; i++){
+    for(int j = 0; j < dim_x; j++){
+      mvadd_wch(mid + i, 1 + j, &cchar);
+      mvadd_wch(mid - i, 1 + j, &cchar);
+      mvaddch(mid + i - 1, 1 + j, ' ');
+      mvaddch(mid - i + 1, 1 + j, ' ');
+    }
+    refresh();
+    usleep(frame_sleep);
   }
   refresh();
 
-  getchar();
-
-  char err[128];
-  sprintf(err, "%d", mid);
-  crit(err);
+//char err[128];
+//sprintf(err, "%d", mid);
+//crit(err);
+  log_borders(white, m_screen);
 }
