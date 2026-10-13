@@ -22,7 +22,7 @@ while [ $iterations -gt 0 ]; do
   sleep .01
   echo "${load}" > $CONTROL_PIPE
   sleep .01
-  echo "OUTPUT ${iterations}"
+  echo "LOGGING ${iterations} yayayayay"
   load=$((load + 1))
   iterations=$((iterations - 1))
 done

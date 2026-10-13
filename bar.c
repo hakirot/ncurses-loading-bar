@@ -24,13 +24,13 @@ int main(int argc, char* argv[]){
   m_screen.cache = 0;
   m_screen.num_bars = 0;
   config.remove_input_log = true;
-  char message[256];
-  sprintf(message, "%s %s", "Waiting for data from", config.pipe_file);
-  strncpy(m_screen.message, message, 256);
+//char message[256];
+//strncpy(m_screen.message, message, 256);
   strncpy(m_screen.header, "ncurses-loading-bar 0.1.0", 256);
   quit_counter = 0;
 
   handle_args(argc, argv);
+  sprintf(m_screen.message, "%s %s", "Waiting for data from", config.pipe_file);
 
   mkfifo(config.pipe_file, 0666);
 
@@ -53,7 +53,6 @@ int main(int argc, char* argv[]){
   check_size(&m_screen);
   if(config.executable[0] != 0) launch(config.executable); // possible sleep
   if(config.input_log[0] != 0) {
-//  config.input_log_fd = fopen(config.input_log, "r");
     animate_log_open(&m_screen);
   }
   reprint(&m_screen);
@@ -283,6 +282,7 @@ void process_stdin(screen* m_screen, FILE * control_pipe){
 
   } else if(lead_char == '+'){
     load_header(m_screen, line);
+    reprint(m_screen);
   } else if(lead_char > 51) {
     load_message(m_screen, line);
     reprint(m_screen);

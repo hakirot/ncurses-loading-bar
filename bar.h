@@ -45,7 +45,6 @@ typedef struct {
   char  executable[256];
   char  input_log[256];
   char  pipe_file[256];
-//FILE* input_log_fd;
   int   remove_input_log;
 } args_config;
 
