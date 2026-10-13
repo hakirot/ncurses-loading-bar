@@ -49,8 +49,8 @@ int main(int argc, char* argv[]){
   }
 
   setlocale(LC_ALL, "");
-  launch_window();
-  check_size(&m_screen);
+  launch_window(&m_screen);
+//check_size(&m_screen);
   if(config.executable[0] != 0) launch(config.executable); // possible sleep
   if(config.input_log[0] != 0) {
     animate_log_open(&m_screen);
@@ -68,7 +68,7 @@ int main(int argc, char* argv[]){
   _quit(0);
 }
 
-void launch_window(){
+void launch_window(screen* m_screen){
   initscr();
   start_color();
   use_default_colors();
@@ -105,7 +105,12 @@ void launch_window(){
   keypad(stdscr, TRUE);
   curs_set(FALSE);
   clear();
- 
+
+  int rows, cols = 0;
+  getmaxyx(stdscr, rows, cols);
+  m_screen->rows  = rows;
+  m_screen->cols  = cols;
+  m_screen->cache = rows + cols;
 }
 
 void version(){
@@ -356,8 +361,8 @@ void reprint(screen* m_screen){
     log_print(m_screen);
   }
 
-  mvprintw(3, 2, "%s", m_screen->message);
-  mvprintw(1, 2, "%s", m_screen->header);
+  print_message(m_screen);
+  print_header(m_screen);
 
   cchar_t cchar;
   setcchar(&cchar, &block, 0, 0, NULL);
@@ -424,12 +429,13 @@ void handle_args(int argc, char * argv[]){
       switch (opt) {
       case 'l':
           // TODO test these
-          if(config.executable[0] != 0) crit("-E not compatible with -l");
+//        if(config.executable[0] != 0) crit("-E not compatible with -l");
+          if(optarg[0] != '/') crit("error: -l must be absolute path to log file");
           strncpy(config.input_log, optarg, 256);
           break;
       case 'E':
           // TODO test these
-          if(config.input_log[0] != 0) crit("-E not compatible with -l");
+//        if(config.input_log[0] != 0) crit("-E not compatible with -l");
 
           char executable[256];
           if(optarg[0] != '/'){
@@ -489,8 +495,13 @@ void launch(char * executable){
   }
 
   char input_log_path[256];
-  sprintf(input_log_path, "%s%d", "/tmp/loading-bar-", bar_pid);
-  strncpy(config.input_log, input_log_path, 256);
+  if(config.input_log[0] == 0){
+    char input_log_path[256];
+    sprintf(input_log_path, "%s%d", "/tmp/loading-bar-", bar_pid);
+    strncpy(config.input_log, input_log_path, 256);
+  } else {
+    sprintf(input_log_path, "%s", config.input_log);
+  }
 
   pid_t pid = fork();
   if (pid < 0) {
@@ -682,4 +693,12 @@ void clear_log_box(int dim_y, int dim_x){
       mvadd_wch(10 + i, 2 + j, &cchar);
     }
   }
+}
+
+void print_message(screen* m_screen){
+  mvprintw(3, 2, "%s", m_screen->message);
+}
+
+void print_header(screen* m_screen){
+  mvprintw(1, 2, "%s", m_screen->header);
 }

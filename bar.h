@@ -58,7 +58,7 @@ int PRINT_FLAG;
 struct timeval slap_time;
 
 void  get_helped();
-void  launch_window();
+void  launch_window(screen* m_screen);
 void  version();
 void  check_size(      screen*    m_screen                         );
 void  bar_borders(     int               c, screen*     m_screen   );
@@ -77,6 +77,8 @@ void  clear_log_box(int dim_y, int dim_x);
 int   key();
 void  slap(char * slap_msg);
 void  reprint(screen* m_screen);
+void  print_message(screen* m_screen);
+void  print_header(screen* m_screen);
 void  play_end(screen* m_screen);
 void  load_header(screen* m_screen, char * line);
 
