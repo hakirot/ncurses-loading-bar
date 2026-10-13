@@ -25,16 +25,12 @@ int main(int argc, char* argv[]){
   m_screen.cols = 0;
   m_screen.cache = 0;
   m_screen.num_bars = 0;
+  config.remove_input_log = 1;
   char message[256];
   sprintf(message, "%s %s", "Waiting for data from", config.pipe_file);
   strncpy(m_screen.message, message, 256);
   strncpy(m_screen.header, "ncurses-loading-bar 0.1.0", 256);
   quit_counter = 0;
-
-  setlocale(LC_ALL, "");
-  launch_window();
-  check_size(&m_screen);
-  bar_borders(white, &m_screen);
 
   mkfifo(config.pipe_file, 0666);
 
@@ -52,9 +48,13 @@ int main(int argc, char* argv[]){
       return 1;
   }
 
-  if(config.executable[0] != 0) launch(config.executable);
-
+  setlocale(LC_ALL, "");
+  launch_window();
+  check_size(&m_screen);
   animate_log_open(&m_screen);
+  bar_borders(white, &m_screen);
+  // possible sleep
+  if(config.executable[0] != 0) launch(config.executable);
   reprint(&m_screen);
   while(1){
 
@@ -121,8 +121,9 @@ void get_helped(){
   printf("  --help, -h       Get helped\n");
   printf("  -v, --version    Get version\n");
   printf("  -n [pipe_name]   Get control data from /tmp/[pipe_name]\n");
-  printf("  -l [log_file]    Display log data from [log_file]\n");
   printf("  -E [executable]  execute [executable].\n");
+  printf("  -l [log_file]    Provide [log_file] from which to display logs, not compatible with -E\n");
+  printf("  -d               Do not remove [log_file]\n");
   exit(0);
 }
 
@@ -305,6 +306,8 @@ int key(){
 
 void _quit(int exit_code){
   remove(config.pipe_file);
+  remove(config.input_log);
+  if(config.remove_input_log) remove(config.input_log);
   endwin();
   exit(exit_code);
 }
@@ -312,7 +315,10 @@ void _quit(int exit_code){
 void crit(char * err) {
   endwin();
   printf("\x1b[31m%s\n\x1b[0m", err);
-  _quit(1);
+  remove(config.pipe_file);
+  remove(config.input_log);
+  if(config.remove_input_log) remove(config.input_log);
+  exit(1);
 }
 
 void slap(char * slap_msg) {
@@ -409,7 +415,7 @@ void handle_args(int argc, char * argv[]){
 
   int opt;
 
-  while ((opt = getopt(argc, argv, "l:E:n:")) != -1) {
+  while ((opt = getopt(argc, argv, "l:E:n:d")) != -1) {
       switch (opt) {
       case 'l':
           // TODO test these
@@ -436,6 +442,9 @@ void handle_args(int argc, char * argv[]){
           break;
       case 'n':
           strncpy(config.pipe_file, optarg, 256);
+          break;
+      case 'd':
+          config.remove_input_log = 0;
           break;
       case '?':
           _quit(1);
@@ -474,14 +483,14 @@ void launch(char * executable){
     slap("setenv error");
   }
 
+  char input_log_path[256];
+  sprintf(input_log_path, "%s%d", "/tmp/loading-bar-", bar_pid);
+  strncpy(config.input_log, input_log_path, 256);
+
   pid_t pid = fork();
   if (pid < 0) {
     crit("forked it up");
   } else if (pid == 0) {
-
-    char input_log_path[256];
-    sprintf(input_log_path, "%s%d", "/tmp/loading-bar-", bar_pid);
-    strncpy(config.input_log, input_log_path, 256);
 
     // child process (executable) writes all output to input_log_path
     // to be displayed by parent (loading bar)
@@ -497,16 +506,16 @@ void launch(char * executable){
   }
 }
 
-void animate_log_open(screen  *  m_screen){
+void animate_log_open(screen* m_screen){
 
   if(config.input_log[0] == '0'){
     return;
   }
    
   int frame_sleep = 500000;
-  int log_low     = m_screen->rows;
-  int log_high    = 7;
-  int mid         = log_high - log_low + 7;
+  int log_low     = 7;
+  int log_high    = m_screen->rows;
+  int mid         = (log_high - log_low)/2 + 7;
   int dim_x       = m_screen->cols - 2;
 
   wchar_t wc = MenuBorder[4];
@@ -516,4 +525,11 @@ void animate_log_open(screen  *  m_screen){
   for(int i = 0; i < dim_x; i++){
     mvadd_wch(mid, 1 + i, &cchar);
   }
+  refresh();
+
+  getchar();
+
+  char err[128];
+  sprintf(err, "%d", mid);
+  crit(err);
 }

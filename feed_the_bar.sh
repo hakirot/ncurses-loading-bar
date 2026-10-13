@@ -1,27 +1,30 @@
 #!/usr/bin/env bash
 
-pipe_file="/tmp/load_pipe"
+ 
+if [ -z ${CONTROL_PIPE+x} ] ; then
+  CONTROL_PIPE="/tmp/load_pipe"
+fi
 
 iterations=100
 load=0
 while [ $iterations -gt 0 ]; do
   if [ $iterations -eq 90 ]; then
-    echo "+INITIALIZING" > $pipe_file
+    echo "+INITIALIZING" > $CONTROL_PIPE
     echo "OUTPUT 1"
   elif [ $iterations -eq 60 ]; then
-    echo "+ALTERING" > $pipe_file
+    echo "+ALTERING" > $CONTROL_PIPE
     echo "OUTPUT 2"
   elif [ $iterations -eq 30 ]; then
-    echo "+FINISHING" > $pipe_file
+    echo "+FINISHING" > $CONTROL_PIPE
     echo "OUTPUT 3"
   fi
-  echo "CONFIGURING ${load}" > $pipe_file
+  echo "CONFIGURING ${load}" > $CONTROL_PIPE
   sleep .01
-  echo "${load}" > $pipe_file
+  echo "${load}" > $CONTROL_PIPE
   sleep .01
   load=$((load + 1))
   iterations=$((iterations - 1))
 done
 
 sleep 1
-echo "100" > $pipe_file
+echo "100" > $CONTROL_PIPE
