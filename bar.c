@@ -220,6 +220,7 @@ void check_size(screen * m_screen){
     m_screen->rows = rows;
     m_screen->cols = cols;
     m_screen->cache = rows + cols;
+    // TODO relevent log reprints
     reprint(m_screen);
   }
 }
@@ -422,7 +423,7 @@ void handle_args(int argc, char * argv[]){
           char executable[256];
           if(optarg[0] != '/'){
             char * env = getenv("PWD");
-            sprintf(executable, "%s%s", env, optarg);
+            sprintf(executable, "%s/%s", env, optarg);
             if (access(executable, F_OK) != 0){
               crit("inaccessible executable");
             } else {
@@ -497,7 +498,22 @@ void launch(char * executable){
 }
 
 void animate_log_open(screen  *  m_screen){
+
   if(config.input_log[0] == '0'){
     return;
+  }
+   
+  int frame_sleep = 500000;
+  int log_low     = m_screen->rows;
+  int log_high    = 7;
+  int mid         = log_high - log_low + 7;
+  int dim_x       = m_screen->cols - 2;
+
+  wchar_t wc = MenuBorder[4];
+  cchar_t cchar;
+  setcchar(&cchar, &wc, 0, 0, NULL);
+
+  for(int i = 0; i < dim_x; i++){
+    mvadd_wch(mid, 1 + i, &cchar);
   }
 }
