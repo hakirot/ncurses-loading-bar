@@ -40,7 +40,14 @@ typedef struct {
   char header[256];
 } screen;
 
-const wchar_t MenuBorder[] =   L"┌┐└┘─│";
+typedef struct {
+  char executable[256];
+  char input_log[256];
+  char pipe_file[256];
+} args_config;
+
+//const wchar_t MenuBorder[] =   L"┌┐└┘─│";
+const wchar_t MenuBorder[] =   L"╭╮╰╯─│";
 wchar_t block = L'\u2588';
 int quit_counter;
 
@@ -51,15 +58,15 @@ struct timeval slap_time;
 void get_helped();
 void launch_window();
 void version();
-void get_helped();
-void bar_borders(int c, screen * m_screen);
-void check_size(screen * m_screen);
-void process_stdin(screen * m_screen, FILE * pipe);
-void load_message(screen * m_screen, char* line);
-void update_progress(screen* m_screen, int percentage);
-int key();
-void _quit();
-void crit(char * err);
+void check_size(     screen     *    m_screen                                          );
+void bar_borders(    int                    c, screen*        m_screen                 );
+void process_stdin(  screen     *    m_screen, FILE       *       pipe                 );
+void load_message(   screen     *    m_screen, char       *       line                 );
+void update_progress(screen     *    m_screen, int          percentage                 );
+void handle_args(    int                 argc, char       *  argv[] );
+void _quit(          int            exit_code                                          );
+void crit(           char       *         err                                          );
+int  key();
 void slap(char * slap_msg);
 void reprint(screen* m_screen);
 void play_end(screen* m_screen);

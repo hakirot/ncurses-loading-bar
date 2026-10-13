@@ -1,14 +1,9 @@
 #!/usr/bin/env bash
 
-#./loading-bar &
-#pid=$!
-#pipe_file="/tmp/load_pipe${pid}"
-
-pipe_file="/tmp/load_pipe129433"
+pipe_file="/tmp/hi"
 
 iterations=100
 load=0
-echo "${pipe_file}" > log
 while [ $iterations -gt 0 ]; do
   if [ $iterations -eq 90 ]; then
     echo "+INITIALIZING" > $pipe_file

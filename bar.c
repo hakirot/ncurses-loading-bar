@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <locale.h>
+#include <getopt.h>
 #include <time.h>
 #include <fcntl.h>
 #include <sys/time.h>
@@ -13,20 +14,11 @@
 #include "bar.h"
 #include "ncurses.h"
 
-char PIPE_PATH[64];
+args_config config;
 
 int main(int argc, char* argv[]){
 
-  for (int i = 1; i < argc; i++) {
-    if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0) {
-      get_helped();
-    } else if (strcmp(argv[i], "--version") == 0) {
-      version();
-    }
-  }
-
-  int pid = getpid();
-  sprintf(PIPE_PATH, "%s%d", "/tmp/load_pipe", pid);
+  handle_args(argc, argv);
 
   screen m_screen;
   m_screen.rows = 0;
@@ -34,7 +26,7 @@ int main(int argc, char* argv[]){
   m_screen.cache = 0;
   m_screen.num_bars = 0;
   char message[256];
-  sprintf(message, "%s %s", "Waiting for data from", PIPE_PATH);
+  sprintf(message, "%s %s", "Waiting for data from", config.pipe_file);
   strncpy(m_screen.message, message, 256);
   strncpy(m_screen.header, "ncurses-loading-bar 0.1.0", 256);
   quit_counter = 0;
@@ -44,21 +36,15 @@ int main(int argc, char* argv[]){
   check_size(&m_screen);
   bar_borders(white, &m_screen);
 
-//int fd = open("/tmp/load_pipe", O_RDWR);
-//if (fd == -1) {
-//    perror("open");
-//    return 1;
-//}
+  mkfifo(config.pipe_file, 0666);
 
-  mkfifo(PIPE_PATH, 0666);
-
-  int fd = open(PIPE_PATH, O_RDWR);
+  int fd = open(config.pipe_file, O_RDWR);
   if (fd == -1) {
       perror("open");
       return 1;
   }
 
-  FILE *pipe = fdopen(fd, "r"); // ?
+  FILE *pipe = fdopen(fd, "r");
   if (pipe == NULL) {
       perror("fdopen");
       close(fd);
@@ -75,7 +61,7 @@ int main(int argc, char* argv[]){
     usleep(20000);
   }
 
-  _quit();
+  _quit(0);
 }
 
 void launch_window(){
@@ -128,8 +114,11 @@ void get_helped(){
   printf("Usage: %s [INPUT_FILE]\n\n", "bar");
   printf("echo single-line STRINGS to INPUT_FILE followed by INT to display load percentage in this program\n\n");
   printf("Visit \x1b[31mhakipaks.org/snippets\x1b[0m for detailed docs\n\n");
-  printf("  --help, -h      Get helped\n");
-  printf("  -v, --version   Get version\n");
+  printf("  --help, -h       Get helped\n");
+  printf("  -v, --version    Get version\n");
+  printf("  -n [pipe_name]   Get control data from /tmp/[pipe_name]\n");
+  printf("  -l [log_file]    Display log data from [log_file]\n");
+  printf("  -E [executable]  execute [executable].\n");
   exit(0);
 }
 
@@ -267,16 +256,16 @@ int key(){
 
 }
 
-void _quit(){
-  remove(PIPE_PATH);
+void _quit(int exit_code){
+  remove(config.pipe_file);
   endwin();
-  exit(0);
+  exit(exit_code);
 }
 
 void crit(char * err) {
   endwin();
   printf("\x1b[31m%s\n\x1b[0m", err);
-  _quit();
+  _quit(1);
 }
 
 void slap(char * slap_msg) {
@@ -347,10 +336,68 @@ void play_end(screen* m_screen){
   mvprintw(m_screen->rows/2 - 1, m_screen->cols/2 - strlen(complete)/2, "%s", complete);
   refresh();
   usleep(500000);
-  _quit();
+  _quit(0);
 }
 
 void load_header(screen* m_screen, char * line){
   memmove(line, line+1, strlen(line));
   strncpy(m_screen->header, line, 256);
+}
+
+void handle_args(int argc, char * argv[]){
+
+  for (int i = 1; i < argc; i++) {
+    if (strcmp(argv[i], "--help") == 0 
+    || strcmp(argv[i], "-h")      == 0)
+    {
+      get_helped();
+    } else if (strcmp(argv[i], "--version") == 0) {
+      version();
+    }
+  }
+
+  memset(config.executable, '\0', 256);
+  memset(config.input_log,  '\0', 256);
+  memset(config.pipe_file,  '\0', 256);
+
+  int opt;
+
+  while ((opt = getopt(argc, argv, "l:E:n:")) != -1) {
+      switch (opt) {
+      case 'E':
+          strncpy(config.executable, optarg, 256);
+          break;
+      case 'l':
+          strncpy(config.input_log, optarg, 256);
+          break;
+      case 'n':
+          strncpy(config.pipe_file, optarg, 256);
+          break;
+      case '?':
+          _quit(1);
+
+      default:
+          return;
+      }
+  }
+
+  if(strlen(config.pipe_file) == 0) {
+    sprintf(config.pipe_file, "%s", "/tmp/load_pipe");
+  } else {
+    char temp[256];
+    memset(temp, '\0', 256 * sizeof(char));
+    strncpy(temp, config.pipe_file, 256);
+    char * tmp = "/tmp/";
+    char path[256];
+    sprintf(path, "%s%s", tmp, temp);
+    strncpy(config.pipe_file, path, 256);
+  }
+}
+
+void exit_if_slash_in_arg(char * arg){
+  for(int i = 0; i < (int)strlen(arg); i++){
+    if (arg[i] == '/'){
+      crit("paths not allowed");
+    }
+  }
 }
