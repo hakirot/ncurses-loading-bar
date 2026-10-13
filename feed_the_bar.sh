@@ -19,13 +19,13 @@ while [ $iterations -gt 0 ]; do
 #   echo "OUTPUT 3"
   fi
   echo "CONFIGURING ${load}" > $CONTROL_PIPE
-  sleep .01
+  sleep .025
   echo "${load}" > $CONTROL_PIPE
-  sleep .01
+  sleep .025
   echo "LOGGING ${iterations} yayayayay"
   load=$((load + 1))
   iterations=$((iterations - 1))
 done
 
-sleep 1
+#sleep 1
 echo "100" > $CONTROL_PIPE

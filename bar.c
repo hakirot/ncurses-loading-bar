@@ -29,7 +29,7 @@ int main(int argc, char* argv[]){
   strncpy(m_screen.header, "ncurses-loading-bar 0.1.0", 256);
   quit_counter = 0;
 
-  handle_args(argc, argv);
+  handle_args(argc, argv, &m_screen);
   sprintf(m_screen.message, "%s %s", "Waiting for data from", config.pipe_file);
 
   mkfifo(config.pipe_file, 0666);
@@ -50,9 +50,10 @@ int main(int argc, char* argv[]){
 
   setlocale(LC_ALL, "");
   launch_window(&m_screen);
-//check_size(&m_screen);
   if(config.executable[0] != 0) launch(config.executable); // possible sleep
   if(config.input_log[0] != 0) {
+    bar_borders(white, &m_screen);
+    print_header(&m_screen);
     animate_log_open(&m_screen);
   }
   reprint(&m_screen);
@@ -129,6 +130,7 @@ void get_helped(){
   printf("  -E [executable]  execute [executable].\n");
   printf("  -l [log_file]    Provide [log_file] from which to display logs, not compatible with -E\n");
   printf("  -d               Preserve [log_file]\n");
+  printf("  -H               Overwrite default startup header string\n");
   exit(0);
 }
 
@@ -407,7 +409,7 @@ void load_header(screen* m_screen, char * line){
   strncpy(m_screen->header, line, 256);
 }
 
-void handle_args(int argc, char * argv[]){
+void handle_args(int argc, char * argv[], screen* m_screen){
 
   for (int i = 1; i < argc; i++) {
     if (strcmp(argv[i], "--help") == 0 
@@ -425,7 +427,7 @@ void handle_args(int argc, char * argv[]){
 
   int opt;
 
-  while ((opt = getopt(argc, argv, "l:E:n:d")) != -1) {
+  while ((opt = getopt(argc, argv, "l:E:n:dH:")) != -1) {
       switch (opt) {
       case 'l':
           // TODO test these
@@ -453,6 +455,9 @@ void handle_args(int argc, char * argv[]){
           break;
       case 'n':
           strncpy(config.pipe_file, optarg, 256);
+          break;
+      case 'H':
+          strncpy(m_screen->header, optarg, 256);
           break;
       case 'd':
           config.remove_input_log = false;
@@ -697,8 +702,10 @@ void clear_log_box(int dim_y, int dim_x){
 
 void print_message(screen* m_screen){
   mvprintw(3, 2, "%s", m_screen->message);
+  refresh();
 }
 
 void print_header(screen* m_screen){
   mvprintw(1, 2, "%s", m_screen->header);
+  refresh();
 }
