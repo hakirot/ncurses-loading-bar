@@ -506,7 +506,7 @@ void launch(char * executable){
 
 void animate_log_open(screen* m_screen){
 
-  if(config.input_log[0] == '0'){
+  if(config.input_log[0] == 0){
     return;
   }
    
@@ -549,8 +549,5 @@ void animate_log_open(screen* m_screen){
   }
   refresh();
 
-//char err[128];
-//sprintf(err, "%d", mid);
-//crit(err);
   log_borders(white, m_screen);
 }
