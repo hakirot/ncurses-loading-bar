@@ -10,18 +10,19 @@ load=0
 while [ $iterations -gt 0 ]; do
   if [ $iterations -eq 90 ]; then
     echo "+INITIALIZING" > $CONTROL_PIPE
-    echo "OUTPUT 1"
+#   echo "OUTPUT 1"
   elif [ $iterations -eq 60 ]; then
     echo "+ALTERING" > $CONTROL_PIPE
-    echo "OUTPUT 2"
+#   echo "OUTPUT 2"
   elif [ $iterations -eq 30 ]; then
     echo "+FINISHING" > $CONTROL_PIPE
-    echo "OUTPUT 3"
+#   echo "OUTPUT 3"
   fi
   echo "CONFIGURING ${load}" > $CONTROL_PIPE
   sleep .01
   echo "${load}" > $CONTROL_PIPE
   sleep .01
+  echo "OUTPUT ${iterations}"
   load=$((load + 1))
   iterations=$((iterations - 1))
 done

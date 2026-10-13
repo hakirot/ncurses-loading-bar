@@ -5,6 +5,7 @@
 #define BAR_H
 
 #include "wchar.h"
+#include <stdlib.h>
 
 #define black           1
 #define red             2
@@ -44,7 +45,7 @@ typedef struct {
   char  executable[256];
   char  input_log[256];
   char  pipe_file[256];
-  FILE* input_log_fd;
+//FILE* input_log_fd;
   int   remove_input_log;
 } args_config;
 
@@ -57,25 +58,27 @@ char SLAP_STR[256];
 int PRINT_FLAG;
 struct timeval slap_time;
 
-void get_helped();
-void launch_window();
-void version();
-void check_size(      screen*    m_screen                         );
-void bar_borders(     int               c, screen*     m_screen   );
-void log_borders(     int               c, screen*     m_screen   );
-void log_print(       screen*    m_screen                              );
-void process_stdin(   screen*    m_screen, FILE  * control_pipe   );
-void load_message(    screen*    m_screen, char  *         line   );
-void update_progress( screen*    m_screen, int       percentage   );
-void handle_args(     int            argc, char  *         argv[] );
-void _quit(           int       exit_code                         );
-void crit(            char  *         err                         );
-void launch(          char  *  executable                         );
-void animate_log_open(screen*  m_screen);
-int  key();
-void slap(char * slap_msg);
-void reprint(screen* m_screen);
-void play_end(screen* m_screen);
-void load_header(screen* m_screen, char * line);
+void  get_helped();
+void  launch_window();
+void  version();
+void  check_size(      screen*    m_screen                         );
+void  bar_borders(     int               c, screen*     m_screen   );
+void  log_borders(     int               c, screen*     m_screen   );
+void  log_print(       screen*    m_screen                              );
+void  process_stdin(   screen*    m_screen, FILE  * control_pipe   );
+void  load_message(    screen*    m_screen, char  *         line   );
+void  update_progress( screen*    m_screen, int       percentage   );
+void  handle_args(     int            argc, char  *         argv[] );
+void  _quit(           int       exit_code                         );
+void  crit(            char  *         err                         );
+void  launch(          char  *  executable                         );
+void  animate_log_open(screen*  m_screen);
+off_t find_last_lines(int fd, size_t n);
+void  clear_log_box(int dim_y, int dim_x);
+int   key();
+void  slap(char * slap_msg);
+void  reprint(screen* m_screen);
+void  play_end(screen* m_screen);
+void  load_header(screen* m_screen, char * line);
 
 #endif

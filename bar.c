@@ -52,7 +52,10 @@ int main(int argc, char* argv[]){
   launch_window();
   check_size(&m_screen);
   if(config.executable[0] != 0) launch(config.executable); // possible sleep
-  if(config.input_log[0] != 0) animate_log_open(&m_screen);
+  if(config.input_log[0] != 0) {
+//  config.input_log_fd = fopen(config.input_log, "r");
+    animate_log_open(&m_screen);
+  }
   reprint(&m_screen);
   while(1){
 
@@ -154,14 +157,12 @@ void bar_borders(int c, screen* m_screen){
     mvadd_wch(6, 1 + i, &cchar);
   }
 
-  attroff(COLOR_PAIR(c));
   wc = MenuBorder[5];
   setcchar(&cchar, &wc, 0, 0, NULL);
   for(int i = 1; i < 2; i++){
     mvadd_wch(5, 1, &cchar);
     mvadd_wch(5, m_screen->cols - 2, &cchar);
   }
-  attroff(COLOR_PAIR(c));
 
   refresh();
   return;
@@ -306,6 +307,7 @@ void _quit(int exit_code){
   endwin();
   remove(config.pipe_file);
   if(config.remove_input_log) remove(config.input_log);
+//if(config.input_log[0] != 0) fclose(config.input_log_fd);
   exit(exit_code);
 }
 
@@ -556,7 +558,128 @@ void animate_log_open(screen* m_screen){
 }
 
 void log_print(screen* m_screen){
+
   if(m_screen->rows < 14) return;
   int dim_y = m_screen->rows - 11;
-  int num_spots = dim_y - 2;
+
+  int fd = open(config.input_log, O_RDONLY);
+  if (fd == -1)
+      return;
+
+
+  int rows = dim_y - 2;
+  int cols = m_screen->cols - 4;
+
+  if (rows <= 0 || cols <= 0) {
+    close(fd);
+    return;
+  }
+
+  off_t start = find_last_lines(fd, (size_t)rows);
+
+  if (start < 0 || lseek(fd, start, SEEK_SET) == -1) {
+    close(fd);
+    return;
+  }
+
+  FILE *fp = fdopen(fd, "r");
+  if (fp == NULL) {
+    close(fd);
+    return;
+  }
+
+  clear_log_box(rows, cols);
+  //box(win, 0, 0);
+
+  char *line = NULL;
+  size_t capacity = 0;
+  int row = 0;
+
+  wchar_t wc = MenuBorder[5];
+  cchar_t cchar;
+  setcchar(&cchar, &wc, 0, 0, NULL);
+
+  while (row <= rows && getline(&line, &capacity, fp) != -1) {
+     // Avoid scrolling the window. Clip to its width.
+//   mvaddnstr(row + 10, 2, line, cols);
+     for(int i = 0; i < (int)strlen(line); i++){
+       mvaddch(row + 10, 2 + i, line[i]);
+       if(i > 40)crit("too big");
+     }
+     mvadd_wch(row + 10, m_screen->cols - 2, &cchar);
+     row++;
+  }
+
+  free(line);
+  fclose(fp);
+
+  refresh();
+}
+
+off_t find_last_lines(int fd, size_t n) {
+
+    int CHUNK_SIZE = 4096;
+    struct stat st;
+
+    if (n == 0 || fstat(fd, &st) == -1)
+        return -1;
+
+    off_t pos = st.st_size;
+
+    if (pos == 0)
+        return 0;
+
+    char buf[CHUNK_SIZE];
+    size_t newlines = 0;
+    int skip_final_newline = 1;
+
+    while (pos > 0) {
+        size_t count = pos < CHUNK_SIZE
+                     ? (size_t)pos : CHUNK_SIZE;
+
+        pos -= count;
+
+        ssize_t bytes = pread(fd, buf, count, pos);
+        if (bytes <= 0)
+            return -1;
+
+        for (ssize_t i = bytes - 1; i >= 0; i--) {
+            if (buf[i] != '\n')
+                continue;
+
+            // Don't count the final newline as
+            // an additional empty line.
+            if (skip_final_newline) {
+                skip_final_newline = 0;
+                continue;
+            }
+
+            newlines++;
+
+            if (newlines == n)
+                return pos + i + 1;
+        }
+
+        skip_final_newline = 0;
+    }
+
+    // Fewer than n lines: start at the beginning.
+    return 0;
+}
+
+void clear_log_box(int dim_y, int dim_x){
+
+  if(dim_y < 3){
+    clear();
+    return;
+  }
+
+  wchar_t wc = L' ';
+  cchar_t cchar;
+  setcchar(&cchar, &wc, 0, 0, NULL);
+  for(int i = 0; i < dim_y - 1; i++){
+    for(int j = 0; j < dim_x - 1; j++){
+      mvadd_wch(10 + i, 2 + j, &cchar);
+    }
+  }
 }
