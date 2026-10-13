@@ -18,19 +18,19 @@ args_config config;
 
 int main(int argc, char* argv[]){
 
-  handle_args(argc, argv);
-
   screen m_screen;
   m_screen.rows = 0;
   m_screen.cols = 0;
   m_screen.cache = 0;
   m_screen.num_bars = 0;
-  config.remove_input_log = 1;
+  config.remove_input_log = true;
   char message[256];
   sprintf(message, "%s %s", "Waiting for data from", config.pipe_file);
   strncpy(m_screen.message, message, 256);
   strncpy(m_screen.header, "ncurses-loading-bar 0.1.0", 256);
   quit_counter = 0;
+
+  handle_args(argc, argv);
 
   mkfifo(config.pipe_file, 0666);
 
@@ -51,8 +51,8 @@ int main(int argc, char* argv[]){
   setlocale(LC_ALL, "");
   launch_window();
   check_size(&m_screen);
-  animate_log_open(&m_screen);
   if(config.executable[0] != 0) launch(config.executable); // possible sleep
+  if(config.input_log[0] != 0) animate_log_open(&m_screen);
   reprint(&m_screen);
   while(1){
 
@@ -121,7 +121,7 @@ void get_helped(){
   printf("  -n [pipe_name]   Get control data from /tmp/[pipe_name]\n");
   printf("  -E [executable]  execute [executable].\n");
   printf("  -l [log_file]    Provide [log_file] from which to display logs, not compatible with -E\n");
-  printf("  -d               Do not remove [log_file]\n");
+  printf("  -d               Preserve [log_file]\n");
   exit(0);
 }
 
@@ -302,10 +302,13 @@ int key(){
 }
 
 void _quit(int exit_code){
-  remove(config.pipe_file);
-  remove(config.input_log);
-  if(config.remove_input_log) remove(config.input_log);
   endwin();
+  remove(config.pipe_file);
+  if(config.remove_input_log == true){
+    printf("%d\n", config.remove_input_log);
+    crit(config.input_log);
+    remove(config.input_log);
+  }
   exit(exit_code);
 }
 
@@ -313,8 +316,9 @@ void crit(char * err) {
   endwin();
   printf("\x1b[31m%s\n\x1b[0m", err);
   remove(config.pipe_file);
-  remove(config.input_log);
-  if(config.remove_input_log) remove(config.input_log);
+  if(config.remove_input_log == true){
+    remove(config.input_log);
+  }
   exit(1);
 }
 
@@ -442,7 +446,7 @@ void handle_args(int argc, char * argv[]){
           strncpy(config.pipe_file, optarg, 256);
           break;
       case 'd':
-          config.remove_input_log = 0;
+          config.remove_input_log = false;
           break;
       case '?':
           _quit(1);
@@ -506,10 +510,6 @@ void launch(char * executable){
 
 void animate_log_open(screen* m_screen){
 
-  if(config.input_log[0] == 0){
-    return;
-  }
-   
   int frame_sleep = 7000;
   int log_low     = 8;
   int log_high    = m_screen->rows - 2;

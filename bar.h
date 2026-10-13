@@ -49,7 +49,7 @@ typedef struct {
 } args_config;
 
 //const wchar_t MenuBorder[] =   L"┌┐└┘─│";
-const wchar_t MenuBorder[] =   L"╭╮╰╯─│";
+const wchar_t MenuBorder[] =     L"╭╮╰╯─│";
 wchar_t block = L'\u2588';
 int quit_counter;
 
