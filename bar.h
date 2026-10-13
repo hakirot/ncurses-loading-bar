@@ -32,18 +32,19 @@
 #define black_whited    24
 
 typedef struct {
-  int rows;
-  int cols;
-  int cache;
-  int num_bars;
+  int  rows;
+  int  cols;
+  int  cache;
+  int  num_bars;
   char message[256];
   char header[256];
 } screen;
 
 typedef struct {
-  char executable[256];
-  char input_log[256];
-  char pipe_file[256];
+  char  executable[256];
+  char  input_log[256];
+  char  pipe_file[256];
+  FILE* input_log_fd;
 } args_config;
 
 //const wchar_t MenuBorder[] =   L"┌┐└┘─│";
@@ -58,14 +59,17 @@ struct timeval slap_time;
 void get_helped();
 void launch_window();
 void version();
-void check_size(     screen     *    m_screen                                          );
-void bar_borders(    int                    c, screen*        m_screen                 );
-void process_stdin(  screen     *    m_screen, FILE       *       pipe                 );
-void load_message(   screen     *    m_screen, char       *       line                 );
-void update_progress(screen     *    m_screen, int          percentage                 );
-void handle_args(    int                 argc, char       *  argv[] );
-void _quit(          int            exit_code                                          );
-void crit(           char       *         err                                          );
+void check_size(      screen  *    m_screen                         );
+void bar_borders(     int                 c, screen*     m_screen   );
+void log_borders(     int                 c, screen*     m_screen   );
+void process_stdin(   screen  *    m_screen, FILE  * control_pipe   );
+void load_message(    screen  *    m_screen, char  *         line   );
+void update_progress( screen  *    m_screen, int       percentage   );
+void handle_args(     int              argc, char  *         argv[] );
+void _quit(           int         exit_code                         );
+void crit(            char    *         err                         );
+void launch(          char    *  executable                         );
+void animate_log_open(screen  *  m_screen);
 int  key();
 void slap(char * slap_msg);
 void reprint(screen* m_screen);

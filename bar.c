@@ -38,19 +38,23 @@ int main(int argc, char* argv[]){
 
   mkfifo(config.pipe_file, 0666);
 
-  int fd = open(config.pipe_file, O_RDWR);
-  if (fd == -1) {
+  // TODO test whether this block is needed
+  int control_fd = open(config.pipe_file, O_RDWR);
+  if (control_fd == -1) {
       perror("open");
       return 1;
   }
 
-  FILE *pipe = fdopen(fd, "r");
+  FILE *pipe = fdopen(control_fd, "r");
   if (pipe == NULL) {
       perror("fdopen");
-      close(fd);
+      close(control_fd);
       return 1;
   }
 
+  if(config.executable[0] != 0) launch(config.executable);
+
+  animate_log_open(&m_screen);
   reprint(&m_screen);
   while(1){
 
@@ -128,35 +132,77 @@ void bar_borders(int c, screen* m_screen){
   wchar_t wc = MenuBorder[0];
   cchar_t cchar;
   setcchar(&cchar, &wc, 0, 0, NULL);
-  mvadd_wch(m_screen->rows/2 - 1, 1, &cchar);
+  mvadd_wch(4, 1, &cchar);
 
   int dim_x = m_screen->cols - 2;
 
   wc = MenuBorder[1];
   setcchar(&cchar, &wc, 0, 0, NULL);
-  mvadd_wch(m_screen->rows/2 - 1, m_screen->cols-2,  &cchar);
+  mvadd_wch(4, m_screen->cols-2,  &cchar);
 
   wc = MenuBorder[2];
   setcchar(&cchar, &wc, 0, 0, NULL);
-  mvadd_wch(m_screen->rows/2 + 1, 1, &cchar);
+  mvadd_wch(6, 1, &cchar);
 
   wc = MenuBorder[3];
   setcchar(&cchar, &wc, 0, 0, NULL);
-  mvadd_wch(m_screen->rows/2 + 1, m_screen->cols - 2, &cchar);
+  mvadd_wch(6, m_screen->cols - 2, &cchar);
 
   wc = MenuBorder[4];
   setcchar(&cchar, &wc, 0, 0, NULL);
   for(int i = 1; i < dim_x - 1; i++){
-    mvadd_wch(m_screen->rows/2 - 1, 1 + i, &cchar);
-    mvadd_wch(m_screen->rows/2 + 1, 1 + i, &cchar);
+    mvadd_wch(4, 1 + i, &cchar);
+    mvadd_wch(6, 1 + i, &cchar);
   }
 
   attroff(COLOR_PAIR(c));
   wc = MenuBorder[5];
   setcchar(&cchar, &wc, 0, 0, NULL);
   for(int i = 1; i < 2; i++){
-    mvadd_wch(m_screen->rows/2, 1, &cchar);
-    mvadd_wch(m_screen->rows/2, m_screen->cols - 2, &cchar);
+    mvadd_wch(5, 1, &cchar);
+    mvadd_wch(5, m_screen->cols - 2, &cchar);
+  }
+  attroff(COLOR_PAIR(c));
+
+  refresh();
+  return;
+}
+
+void log_borders(int c, screen* m_screen){
+  clear();
+//mvprintw(0, 0, "rows: %d cols: %d", m_screen->rows, m_screen->cols);
+  wchar_t wc = MenuBorder[0];
+  cchar_t cchar;
+  setcchar(&cchar, &wc, 0, 0, NULL);
+  mvadd_wch(7, 1, &cchar);
+
+  int dim_x = m_screen->cols - 2;
+
+  wc = MenuBorder[1];
+  setcchar(&cchar, &wc, 0, 0, NULL);
+  mvadd_wch(7, m_screen->cols-2,  &cchar);
+
+  wc = MenuBorder[2];
+  setcchar(&cchar, &wc, 0, 0, NULL);
+  mvadd_wch(m_screen->rows, 1, &cchar);
+
+  wc = MenuBorder[3];
+  setcchar(&cchar, &wc, 0, 0, NULL);
+  mvadd_wch(m_screen->rows, m_screen->cols - 2, &cchar);
+
+  wc = MenuBorder[4];
+  setcchar(&cchar, &wc, 0, 0, NULL);
+  for(int i = 1; i < dim_x - 1; i++){
+    mvadd_wch(7, 1 + i, &cchar);
+    mvadd_wch(m_screen->rows, 1 + i, &cchar);
+  }
+
+  attroff(COLOR_PAIR(c));
+  wc = MenuBorder[5];
+  setcchar(&cchar, &wc, 0, 0, NULL);
+  for(int i = 0; i < m_screen->rows - 9; i++){
+    mvadd_wch(8 + i, 1, &cchar);
+    mvadd_wch(8 + i, dim_x + 1, &cchar);
   }
   attroff(COLOR_PAIR(c));
 
@@ -178,13 +224,13 @@ void check_size(screen * m_screen){
   }
 }
 
-void process_stdin(screen* m_screen, FILE * pipe){
+void process_stdin(screen* m_screen, FILE * control_pipe){
 
   char *input = (char *)malloc(256 * sizeof(char));
   memset(input, '\0', 256 * sizeof(char));
 
   size_t size;
-  fgets(input, 256, pipe);
+  fgets(input, 256, control_pipe);
 
   if(size < 0){
     free(input);
@@ -236,9 +282,9 @@ void process_stdin(screen* m_screen, FILE * pipe){
   } else if(lead_char > 51) {
     load_message(m_screen, line);
     reprint(m_screen);
-  } else if(lead_char == '+'){
-    crit("+");
-    load_header(m_screen, line);
+//} else if(lead_char == '+'){
+//  crit("+");
+//  load_header(m_screen, line);
   }
 
   free(input);
@@ -298,14 +344,14 @@ void load_message(screen * m_screen, char* line){
 void reprint(screen* m_screen){
   clear();
   bar_borders(white, m_screen);
-  mvprintw(m_screen->rows/2 - 2, 2, "%s", m_screen->message);
-  mvprintw(m_screen->rows/2 - 4, 2, "%s", m_screen->header);
+  mvprintw(3, 2, "%s", m_screen->message);
+  mvprintw(1, 2, "%s", m_screen->header);
 
   cchar_t cchar;
   setcchar(&cchar, &block, 0, 0, NULL);
 
   for(int i = 0; i < m_screen->num_bars; i++){
-    mvadd_wch(m_screen->rows/2, 2 + i,  &cchar);
+    mvadd_wch(5, 2 + i,  &cchar);
   }
   refresh();
 
@@ -364,11 +410,28 @@ void handle_args(int argc, char * argv[]){
 
   while ((opt = getopt(argc, argv, "l:E:n:")) != -1) {
       switch (opt) {
-      case 'E':
-          strncpy(config.executable, optarg, 256);
-          break;
       case 'l':
+          // TODO test these
+          if(config.executable[0] != 0) crit("-E not compatible with -l");
           strncpy(config.input_log, optarg, 256);
+          break;
+      case 'E':
+          // TODO test these
+          if(config.input_log[0] != 0) crit("-E not compatible with -l");
+
+          char executable[256];
+          if(optarg[0] != '/'){
+            char * env = getenv("PWD");
+            sprintf(executable, "%s%s", env, optarg);
+            if (access(executable, F_OK) != 0){
+              crit("inaccessible executable");
+            } else {
+              // TODO check executable perms
+              strncpy(config.executable, executable, 256);
+            }
+          } else{
+            strncpy(config.executable, optarg, 256);
+          }
           break;
       case 'n':
           strncpy(config.pipe_file, optarg, 256);
@@ -399,5 +462,42 @@ void exit_if_slash_in_arg(char * arg){
     if (arg[i] == '/'){
       crit("paths not allowed");
     }
+  }
+}
+
+void launch(char * executable){
+
+  int bar_pid = getpid();
+
+  if (setenv("CONTROL_PIPE", config.pipe_file, 1) != 0) {
+    slap("setenv error");
+  }
+
+  pid_t pid = fork();
+  if (pid < 0) {
+    crit("forked it up");
+  } else if (pid == 0) {
+
+    char input_log_path[256];
+    sprintf(input_log_path, "%s%d", "/tmp/loading-bar-", bar_pid);
+    strncpy(config.input_log, input_log_path, 256);
+
+    // child process (executable) writes all output to input_log_path
+    // to be displayed by parent (loading bar)
+    int fd = open(input_log_path, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+    dup2(fd, 1);
+    dup2(fd, 2);
+
+    close(fd);
+
+    execl(executable, executable);
+    perror("execl");
+    crit("execl critical error :|");
+  }
+}
+
+void animate_log_open(screen  *  m_screen){
+  if(config.input_log[0] == '0'){
+    return;
   }
 }
