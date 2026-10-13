@@ -581,7 +581,7 @@ void animate_log_open(screen* m_screen){
 
   if(m_screen->rows < 14) return;
 
-  int frame_sleep = 7000;
+  int frame_sleep = 5000;
   int log_low     = 8;
   int log_high    = m_screen->rows - 2;
   int dim_y       = log_high - log_low;
@@ -592,7 +592,7 @@ void animate_log_open(screen* m_screen){
   cchar_t cchar;
   setcchar(&cchar, &wc, 0, 0, NULL);
 
-  for(int i = 0; i < dim_x/2; i++){
+  for(int i = 0; i < dim_x/2; i+=2){
     for(int j = 0; j < i; j++){
       mvadd_wch(mid, m_screen->cols/2 + j, &cchar);
       mvadd_wch(mid, m_screen->cols/2 - j, &cchar);
