@@ -168,7 +168,9 @@ void bar_borders(int c, screen* m_screen){
 }
 
 void log_borders(int c, screen* m_screen){
-//mvprintw(0, 0, "rows: %d cols: %d", m_screen->rows, m_screen->cols);
+
+  if(m_screen->rows < 14) return;
+
   wchar_t wc = MenuBorder[0];
   cchar_t cchar;
   setcchar(&cchar, &wc, 0, 0, NULL);
@@ -229,6 +231,8 @@ void process_stdin(screen* m_screen, FILE * control_pipe){
   memset(input, '\0', 256 * sizeof(char));
 
   size_t size;
+
+  // I can see this blocking and preventing us from reading logs
   fgets(input, 256, control_pipe);
 
   if(size < 0){
@@ -281,12 +285,9 @@ void process_stdin(screen* m_screen, FILE * control_pipe){
   } else if(lead_char > 51) {
     load_message(m_screen, line);
     reprint(m_screen);
-//} else if(lead_char == '+'){
-//  crit("+");
-//  load_header(m_screen, line);
   }
-
   free(input);
+
   return;
 }
 
@@ -304,11 +305,7 @@ int key(){
 void _quit(int exit_code){
   endwin();
   remove(config.pipe_file);
-  if(config.remove_input_log == true){
-    printf("%d\n", config.remove_input_log);
-    crit(config.input_log);
-    remove(config.input_log);
-  }
+  if(config.remove_input_log) remove(config.input_log);
   exit(exit_code);
 }
 
@@ -316,9 +313,7 @@ void crit(char * err) {
   endwin();
   printf("\x1b[31m%s\n\x1b[0m", err);
   remove(config.pipe_file);
-  if(config.remove_input_log == true){
-    remove(config.input_log);
-  }
+  if(config.remove_input_log) remove(config.input_log);
   exit(1);
 }
 
@@ -350,9 +345,15 @@ void load_message(screen * m_screen, char* line){
 }
 
 void reprint(screen* m_screen){
+
   clear();
   bar_borders(white, m_screen);
-  if(config.input_log[0] != 0) log_borders(white, m_screen);
+
+  if(config.input_log[0] != 0) {
+    log_borders(white, m_screen);
+    log_print(m_screen);
+  }
+
   mvprintw(3, 2, "%s", m_screen->message);
   mvprintw(1, 2, "%s", m_screen->header);
 
@@ -510,6 +511,8 @@ void launch(char * executable){
 
 void animate_log_open(screen* m_screen){
 
+  if(m_screen->rows < 14) return;
+
   int frame_sleep = 7000;
   int log_low     = 8;
   int log_high    = m_screen->rows - 2;
@@ -550,4 +553,10 @@ void animate_log_open(screen* m_screen){
   refresh();
 
   log_borders(white, m_screen);
+}
+
+void log_print(screen* m_screen){
+  if(m_screen->rows < 14) return;
+  int dim_y = m_screen->rows - 11;
+  int num_spots = dim_y - 2;
 }
