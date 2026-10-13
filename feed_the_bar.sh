@@ -32,3 +32,5 @@ done
 echo "ITS WORKING ITS WORKING"
 #yay --noconfirm
 echo "100" > $CONTROL_PIPE
+sleep 100
+touch hi

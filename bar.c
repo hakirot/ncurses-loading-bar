@@ -763,7 +763,7 @@ void animate_close(screen*  m_screen){
 
   int rows, cols = 0;
   getmaxyx(stdscr, rows, cols);
-  int sleep_time = 10000;
+  int sleep_time = 7500;
 
   int dim_y = rows;
   int dim_x = cols;
@@ -821,18 +821,44 @@ void animate_close(screen*  m_screen){
   clear();
   wc = MenuBorder[4];
   setcchar(&cchar, &wc, 0, 0, NULL);
-  for(int i = 0; i < cols - delta*2; i++){
-    mvadd_wch(rows/2, i + delta, &cchar);
-  }
-  refresh();
-  usleep(sleep_time);
 
-//getchar();
-  sleep_time = 1500;
-  for(int i = 0; i < cols/2; i++){
-    mvaddch(rows/2, i, ' ');
-    mvaddch(rows/2, cols-1-i, ' ');
+//for(int i = 0; i < cols - delta*2; i++){
+//  mvadd_wch(rows/2, i + delta, &cchar);
+//}
+//refresh();
+//usleep(sleep_time);
+
+//while(1){
+
+  //getchar();
+    sleep_time = 4500;
+//sleep_time = 100000;
+  for(int i = delta; i < cols/2; i+=3){
+//  mvaddch(rows/2, i, ' ');
+//  mvaddch(rows/2, i + 1, ' ');
+//  mvaddch(rows/2, i + 2, ' ');
+//  mvaddch(rows/2, cols-1-i, ' ');
+//  mvaddch(rows/2, cols-2-i, ' ');
+//  mvaddch(rows/2, cols-3-i, ' ');
     refresh();
     usleep(sleep_time);
+
+    clear();
+    refresh();
+    usleep(sleep_time);
+
+//  for(int j = 0; j < cols; j++){
+//    mvadd_wch(rows/2, j, &cchar);
+//  }
+
+
+//  for(; i < cols - delta*2; delta++){
+//    mvadd_wch(rows/2, i + delta, &cchar);
+//  }
+
+    for(int j = 0; j < cols - i*2; j++){
+      mvadd_wch(rows/2, i + j, &cchar);
+    }
   }
+//}
 }
