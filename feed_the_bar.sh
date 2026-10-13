@@ -7,6 +7,7 @@ fi
 
 iterations=100
 load=0
+sleep 2
 while [ $iterations -gt 0 ]; do
   if [ $iterations -eq 90 ]; then
     echo "+INITIALIZING" > $CONTROL_PIPE
@@ -27,5 +28,12 @@ while [ $iterations -gt 0 ]; do
   iterations=$((iterations - 1))
 done
 
-#sleep 1
+echo "ITS WORKING ITS WORKING"
+echo "ITS WORKING ITS WORKING"
+sleep 1
+echo "ITS WORKING ITS WORKING"
+echo "ITS WORKING ITS WORKING"
+sleep 1
+yay --noconfirm
+sleep 1
 echo "100" > $CONTROL_PIPE

@@ -8,6 +8,7 @@
 #include <getopt.h>
 #include <time.h>
 #include <fcntl.h>
+#include <poll.h>
 #include <sys/time.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -41,8 +42,8 @@ int main(int argc, char* argv[]){
       return 1;
   }
 
-  FILE *pipe = fdopen(control_fd, "r");
-  if (pipe == NULL) {
+  config.pipe_fd = fdopen(control_fd, "r");
+  if (config.pipe_fd == NULL) {
       perror("fdopen");
       close(control_fd);
       return 1;
@@ -51,16 +52,64 @@ int main(int argc, char* argv[]){
   setlocale(LC_ALL, "");
   launch_window(&m_screen);
   if(config.executable[0] != 0) launch(config.executable); // possible sleep
-  if(config.input_log[0] != 0) {
+  if(config.input_log[0] != 0 && config.skip_log_startup == false) {
     bar_borders(white, &m_screen);
     print_header(&m_screen);
     animate_log_open(&m_screen);
   }
   reprint(&m_screen);
+
+  int poll_pipe_fd = fileno(config.pipe_fd);
+  struct pollfd pfd = {
+    .fd = poll_pipe_fd,
+    .events = POLLIN
+  };
+  int pipe_updated;
+  int pipe_updated_ret = 0;
+
+  int log_exists = 0;
+  if(config.input_log[0] != 0){
+    log_exists = 1;
+  }
+
+  if(log_exists){
+    config.log_fd = fopen(config.input_log, "r");
+    if (config.log_fd == NULL) {
+      crit("fdopen");
+      close(control_fd);
+    }
+  }
+
+  int poll_log_fd = 0;
+  struct pollfd lfd;
+
+  if(log_exists){
+    poll_log_fd = fileno(config.log_fd);
+    lfd.fd = poll_log_fd;
+    lfd.events = POLLIN;
+  }
+
+  int log_updated;
+  int log_updated_ret = 0;
+
   while(1){
 
+    pipe_updated = 0;
+    pipe_updated_ret = poll(&pfd, 1, 0);
+    if (pipe_updated_ret > 0 && (pfd.revents & POLLIN)) {
+      pipe_updated = 1;
+    }
+
+    if(log_exists){
+      log_updated = 0;
+      log_updated_ret = poll(&lfd, 1, 0);
+      if (log_updated_ret > 0 && (lfd.revents & POLLIN)) {
+        log_updated = 1;
+      }
+    }
+
     check_size(&m_screen);
-    process_stdin(&m_screen, pipe);
+    process_stdin(&m_screen, config.pipe_fd, pipe_updated, log_updated);
     key();
 
     usleep(20000);
@@ -131,6 +180,7 @@ void get_helped(){
   printf("  -l [log_file]    Provide [log_file] from which to display logs, not compatible with -E\n");
   printf("  -d               Preserve [log_file]\n");
   printf("  -H               Overwrite default startup header string\n");
+  printf("  -S               Skip log startup animation\n");
   exit(0);
 }
 
@@ -232,70 +282,65 @@ void check_size(screen * m_screen){
   }
 }
 
-void process_stdin(screen* m_screen, FILE * control_pipe){
+void process_stdin(screen* m_screen, FILE * control_pipe, int pipe_updated, int log_updated){
 
   char *input = (char *)malloc(256 * sizeof(char));
   memset(input, '\0', 256 * sizeof(char));
 
-  size_t size;
+  if(pipe_updated){
+    fgets(input, 256, control_pipe);
 
-  // I can see this blocking and preventing us from reading logs
-  fgets(input, 256, control_pipe);
+    char line[256] = {"\0"}; 
+    strncpy(line, input, 256);
+    line[strlen(line)-1] = '\0';
 
-  if(size < 0){
-    free(input);
-    crit("bad data?");
-    return;
-  }
+    int lead_char = line[0];
 
-  char line[256] = {"\0"}; 
-  strncpy(line, input, 256);
-  line[strlen(line)-1] = '\0';
+    if(lead_char > 47 && lead_char < 58){
 
-  int lead_char = line[0];
+      if (strlen(line) > 2){
 
-  if(lead_char > 47 && lead_char < 58){
+        if(strncmp("100", line, strlen(line)) == 0){
+          play_end(m_screen);
+        }
 
-    if (strlen(line) > 2){
+        crit("err_1");
 
-      if(strncmp("100", line, strlen(line)) == 0){
-        play_end(m_screen);
-      }
-
-      crit("err_1");
-
-      char err[128];
-      sprintf(err, "%s %s", "NUMBER ERROR", line);
-      slap(err);
-      free(input);
-      return;
-    }
-
-    for(int i = 0; i < (int)strlen(line); i++){
-      if (line[i] < 48 || line[i] > 57){
-        crit("err_2");
         char err[128];
         sprintf(err, "%s %s", "NUMBER ERROR", line);
         slap(err);
         free(input);
         return;
       }
+
+      for(int i = 0; i < (int)strlen(line); i++){
+        if (line[i] < 48 || line[i] > 57){
+          crit("err_2");
+          char err[128];
+          sprintf(err, "%s %s", "NUMBER ERROR", line);
+          slap(err);
+          free(input);
+          return;
+        }
+      }
+
+      int percentage = atoi(line);
+
+      update_progress(m_screen, percentage);
+      reprint(m_screen);
+
+    } else if(lead_char == '+'){
+      load_header(m_screen, line);
+      reprint(m_screen);
+    } else if(lead_char > 51) {
+      load_message(m_screen, line);
+      reprint(m_screen);
     }
-
-    int percentage = atoi(line);
-
-    update_progress(m_screen, percentage);
-    reprint(m_screen);
-
-  } else if(lead_char == '+'){
-    load_header(m_screen, line);
-    reprint(m_screen);
-  } else if(lead_char > 51) {
-    load_message(m_screen, line);
-    reprint(m_screen);
+  } else if (log_updated) {
+    log_print(m_screen);
   }
-  free(input);
 
+  free(input);
   return;
 }
 
@@ -314,7 +359,8 @@ void _quit(int exit_code){
   endwin();
   remove(config.pipe_file);
   if(config.remove_input_log) remove(config.input_log);
-//if(config.input_log[0] != 0) fclose(config.input_log_fd);
+  if(config.input_log[0] != 0) fclose(config.log_fd);
+  fclose(config.pipe_fd);
   exit(exit_code);
 }
 
@@ -424,10 +470,11 @@ void handle_args(int argc, char * argv[], screen* m_screen){
   memset(config.executable, '\0', 256);
   memset(config.input_log,  '\0', 256);
   memset(config.pipe_file,  '\0', 256);
+  config.skip_log_startup = false;
 
   int opt;
 
-  while ((opt = getopt(argc, argv, "l:E:n:dH:")) != -1) {
+  while ((opt = getopt(argc, argv, "l:E:n:dH:S")) != -1) {
       switch (opt) {
       case 'l':
           // TODO test these
@@ -461,6 +508,9 @@ void handle_args(int argc, char * argv[], screen* m_screen){
           break;
       case 'd':
           config.remove_input_log = false;
+          break;
+      case 'S':
+          config.skip_log_startup = true;
           break;
       case '?':
           _quit(1);
@@ -620,7 +670,6 @@ void log_print(screen* m_screen){
 //   mvaddnstr(row + 10, 2, line, cols);
      for(int i = 0; i < (int)strlen(line); i++){
        mvaddch(row + 10, 2 + i, line[i]);
-       if(i > 40)crit("too big");
      }
      mvadd_wch(row + 10, m_screen->cols - 2, &cchar);
      row++;

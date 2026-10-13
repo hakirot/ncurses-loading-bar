@@ -46,6 +46,9 @@ typedef struct {
   char  input_log[256];
   char  pipe_file[256];
   int   remove_input_log;
+  int   skip_log_startup;
+  FILE *pipe_fd;
+  FILE *log_fd;
 } args_config;
 
 //const wchar_t MenuBorder[] =   L"┌┐└┘─│";
@@ -64,7 +67,7 @@ void  check_size(      screen*    m_screen                         );
 void  bar_borders(     int               c, screen*     m_screen   );
 void  log_borders(     int               c, screen*     m_screen   );
 void  log_print(       screen*    m_screen                              );
-void  process_stdin(   screen*    m_screen, FILE  * control_pipe   );
+void  process_stdin(   screen*    m_screen, FILE  * control_pipe,  int pipe_updated, int log_updated);
 void  load_message(    screen*    m_screen, char  *         line   );
 void  update_progress( screen*    m_screen, int       percentage   );
 void  _quit(           int       exit_code                         );
