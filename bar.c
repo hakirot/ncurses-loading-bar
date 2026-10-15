@@ -668,12 +668,12 @@ void log_print(screen* m_screen){
 
   while (row <= rows && getline(&line, &capacity, fp) != -1) {
      // Avoid scrolling the window. Clip to its width.
-//   mvaddnstr(row + 10, 2, line, cols);
-     for(int i = 0; i < (int)strlen(line); i++){
-       mvaddch(row + 10, 2 + i, line[i]);
-     }
-     mvadd_wch(row + 10, m_screen->cols - 2, &cchar);
-     row++;
+    int len = strlen(line);
+    for(int i = 0; i < len - 1; i++){
+      if(i > m_screen->cols - 5) break;
+      mvaddch(row + 10, 2 + i, line[i]);
+    }
+    row++;
   }
 
   free(line);
@@ -784,35 +784,12 @@ void animate_close(screen*  m_screen){
     dim_y = rows - (delta*2);
     dim_x = cols - (delta*2);
 
-//  wc = MenuBorder[0];
-//  setcchar(&cchar, &wc, 0, 0, NULL);
-//  mvadd_wch(0 + delta, 0 + delta, &cchar);
-
-//  wc = MenuBorder[1];
-//  setcchar(&cchar, &wc, 0, 0, NULL);
-//  mvadd_wch(0 + delta, cols - 1 - delta, &cchar);
-
-//  wc = MenuBorder[2];
-//  setcchar(&cchar, &wc, 0, 0, NULL);
-//  mvadd_wch(rows - 1 - delta, 0 + delta, &cchar);
-
-//  wc = MenuBorder[3];
-//  setcchar(&cchar, &wc, 0, 0, NULL);
-//  mvadd_wch(rows - 1 - delta, cols - 1 - delta, &cchar);
-
     wc = MenuBorder[4];
     setcchar(&cchar, &wc, 0, 0, NULL);
     for(int i = 1; i < dim_x - 1; i++){
       mvadd_wch(0 + delta, 0 + i + delta, &cchar);
       mvadd_wch(rows - 1 - delta, 0 + i + delta, &cchar);
     }
-
-//  wc = MenuBorder[5];
-//  setcchar(&cchar, &wc, 0, 0, NULL);
-//  for(int i = 1; i < dim_y - 1; i++){
-//    mvadd_wch(0 + i + delta, 0 + delta, &cchar);
-//    mvadd_wch(0 + i + delta, cols - 1 - delta, &cchar);
-//  }
 
     refresh();
     usleep(sleep_time);
@@ -823,39 +800,14 @@ void animate_close(screen*  m_screen){
   wc = MenuBorder[4];
   setcchar(&cchar, &wc, 0, 0, NULL);
 
-//for(int i = 0; i < cols - delta*2; i++){
-//  mvadd_wch(rows/2, i + delta, &cchar);
-//}
-//refresh();
-//usleep(sleep_time);
-
-//while(1){
-
-  //getchar();
     sleep_time = 4500;
-//sleep_time = 100000;
   for(int i = delta; i < cols/2; i+=3){
-//  mvaddch(rows/2, i, ' ');
-//  mvaddch(rows/2, i + 1, ' ');
-//  mvaddch(rows/2, i + 2, ' ');
-//  mvaddch(rows/2, cols-1-i, ' ');
-//  mvaddch(rows/2, cols-2-i, ' ');
-//  mvaddch(rows/2, cols-3-i, ' ');
     refresh();
     usleep(sleep_time);
 
     clear();
     refresh();
     usleep(sleep_time);
-
-//  for(int j = 0; j < cols; j++){
-//    mvadd_wch(rows/2, j, &cchar);
-//  }
-
-
-//  for(; i < cols - delta*2; delta++){
-//    mvadd_wch(rows/2, i + delta, &cchar);
-//  }
 
     for(int j = 0; j < cols - i*2; j++){
       mvadd_wch(rows/2, i + j, &cchar);
