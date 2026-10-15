@@ -182,6 +182,7 @@ void get_helped(){
   printf("  -d               Preserve [log_file]\n");
   printf("  -H               Overwrite default startup header string\n");
   printf("  -S               Skip log startup animation\n");
+  printf("  -C               Specify closing message\n");
   exit(0);
 }
 
@@ -425,7 +426,11 @@ void reprint(screen* m_screen){
 void play_end(screen* m_screen){
   clear();
   refresh();
-  char * complete = "- = COMPLETE = -";
+
+  if(config.closing_message[0] == 0){
+    strncpy(config.closing_message, "- = COMPLETE = -", 256);
+  }
+
   int flag = 0;
   int num_frames = 15;
   int sleep_time = 50000;
@@ -436,7 +441,7 @@ void play_end(screen* m_screen){
 
     usleep(sleep_time);
     if(flag == 0){
-      mvprintw(m_screen->rows/2 - 1, m_screen->cols/2 - strlen(complete)/2, "%s", complete);
+      mvprintw(m_screen->rows/2 - 1, m_screen->cols/2 - strlen(config.closing_message)/2, "%s", config.closing_message);
       flag++;
     } else {
       clear();
@@ -445,7 +450,7 @@ void play_end(screen* m_screen){
     refresh();
     num_frames--;
   }
-  mvprintw(m_screen->rows/2 - 1, m_screen->cols/2 - strlen(complete)/2, "%s", complete);
+  mvprintw(m_screen->rows/2 - 1, m_screen->cols/2 - strlen(config.closing_message)/2, "%s", config.closing_message);
   refresh();
   usleep(500000);
   _quit(0);
@@ -468,14 +473,15 @@ void handle_args(int argc, char * argv[], screen* m_screen){
     }
   }
 
-  memset(config.executable, '\0', 256);
-  memset(config.input_log,  '\0', 256);
-  memset(config.pipe_file,  '\0', 256);
+  memset(config.executable,       '\0', 256);
+  memset(config.input_log,        '\0', 256);
+  memset(config.pipe_file,        '\0', 256);
+  memset(config.closing_message,  '\0', 256);
   config.skip_log_startup = false;
 
   int opt;
 
-  while ((opt = getopt(argc, argv, "l:E:n:dH:S")) != -1) {
+  while ((opt = getopt(argc, argv, "l:E:n:dH:SC:")) != -1) {
       switch (opt) {
       case 'l':
           // TODO test these
@@ -512,6 +518,9 @@ void handle_args(int argc, char * argv[], screen* m_screen){
           break;
       case 'S':
           config.skip_log_startup = true;
+          break;
+      case 'C':
+          strncpy(config.closing_message, optarg, 256);
           break;
       case '?':
           _quit(1);
@@ -629,18 +638,16 @@ void log_print(screen* m_screen){
   if(m_screen->rows < 14) return;
   int dim_y = m_screen->rows - 11;
 
-  int fd = open(config.input_log, O_RDONLY);
-  if (fd == -1)
-      return;
-
-
   int rows = dim_y - 2;
   int cols = m_screen->cols - 4;
 
   if (rows <= 0 || cols <= 0) {
-    close(fd);
     return;
   }
+
+  int fd = open(config.input_log, O_RDONLY);
+  if (fd == -1) return;
+
 
   off_t start = find_last_lines(fd, (size_t)rows);
 
@@ -656,7 +663,6 @@ void log_print(screen* m_screen){
   }
 
   clear_log_box(rows, cols);
-  //box(win, 0, 0);
 
   char *line = NULL;
   size_t capacity = 0;
@@ -736,7 +742,7 @@ off_t find_last_lines(int fd, size_t n) {
 void clear_log_box(int dim_y, int dim_x){
 
   if(dim_y < 3){
-    clear();
+    //clear();
     return;
   }
 
