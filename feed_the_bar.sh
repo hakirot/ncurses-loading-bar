@@ -1,12 +1,14 @@
 #!/usr/bin/env bash
+
+endbar() {
+  while pgrep loading-bar ; do
+    sleep 1
+    echo > $CONTROL_PIPE
+}
  
 if [ -z ${CONTROL_PIPE+x} ] ; then
   CONTROL_PIPE="/tmp/load_pipe"
 fi
-
-endbar () {
-  echo > $CONTROL_PIPE
-}
 
 iterations=100
 load=0
@@ -34,7 +36,7 @@ echo "+yay" > $CONTROL_PIPE
 echo "Updating System" > $CONTROL_PIPE
 echo "Updating System" > $CONTROL_PIPE
 echo "Updating System" > $CONTROL_PIPE
-#yay --noconfirm
+yay --noconfirm
 sleep .25
 echo 100 > $CONTROL_PIPE
 endbar

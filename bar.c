@@ -357,10 +357,10 @@ int key(){
 
 void _quit(int exit_code){
   endwin();
+  fclose(config.pipe_fd);
   remove(config.pipe_file);
   if(config.remove_input_log) remove(config.input_log);
   if(config.input_log[0] != 0) fclose(config.log_fd);
-  fclose(config.pipe_fd);
   exit(exit_code);
 }
 
