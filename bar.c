@@ -15,6 +15,8 @@
 #include "bar.h"
 #include "ncurses.h"
 
+int DEBUG = 0;
+
 args_config config;
 
 int main(int argc, char* argv[]){
@@ -299,28 +301,10 @@ void process_stdin(screen* m_screen, FILE * control_pipe, int pipe_updated, int 
     if(lead_char > 47 && lead_char < 58){
 
       if (strlen(line) > 2 && strncmp("100", line, strlen(line)) != 0){
-//      if(strncmp("100", line, strlen(line)) == 0){
-//        play_end(m_screen);
-//      }
-
-        crit("err_1");
-
         char err[128];
-        sprintf(err, "%s %s", "NUMBER ERROR", line);
-        slap(err);
-        free(input);
+        sprintf(err, "%s %s", "NUMBER INPUT ERROR: possibly not in range:", line);
+        crit(err);
         return;
-      }
-
-      for(int i = 0; i < (int)strlen(line); i++){
-        if (line[i] < 48 || line[i] > 57){
-          crit("err_2");
-          char err[128];
-          sprintf(err, "%s %s", "NUMBER ERROR", line);
-          slap(err);
-          free(input);
-          return;
-        }
       }
 
       int percentage = atoi(line);
@@ -350,7 +334,7 @@ void update_progress(screen* m_screen, int percentage){
   float bar_percentage = (float)percentage/100;
   int num_progress_bars = (int)((float)num_available_bars*bar_percentage);
   m_screen->num_bars = num_progress_bars;
-//if(percentage > 99){
+//if(percentage == 100){
 //  char err[128];
 //  sprintf(err, "%s%d %s%d", "num available: ", num_available_bars, "num bars: ", num_progress_bars);
 //  crit(err);
@@ -827,5 +811,4 @@ void animate_close(screen*  m_screen){
       mvadd_wch(rows/2, i + j, &cchar);
     }
   }
-//}
 }

@@ -61,6 +61,8 @@ char SLAP_STR[256];
 int PRINT_FLAG;
 struct timeval slap_time;
 
+int DEBUG;
+
 void  get_helped();
 void  launch_window(screen* m_screen);
 void  version();
