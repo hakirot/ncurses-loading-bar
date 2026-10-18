@@ -298,8 +298,7 @@ void process_stdin(screen* m_screen, FILE * control_pipe, int pipe_updated, int 
 
     if(lead_char > 47 && lead_char < 58){
 
-      if (strlen(line) > 2){
-
+      if (strlen(line) > 2 && strncmp("100", line, strlen(line)) != 0){
 //      if(strncmp("100", line, strlen(line)) == 0){
 //        play_end(m_screen);
 //      }
