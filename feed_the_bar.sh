@@ -2,7 +2,7 @@
 
 endbar() {
 
-  flashes=8
+  flashes=6
   while [ $flashes -gt 0 ]; do
     echo "0" > $CONTROL_PIPE
     sleep .05
@@ -12,7 +12,6 @@ endbar() {
   done
 
   while pgrep loading-bar >/dev/null ; do
-    sleep 1
     echo "PIPE_END" > $CONTROL_PIPE
     echo "Still Running"
   done
@@ -48,6 +47,7 @@ while [ $iterations -gt 0 ]; do
 done
 
 echo "+yay" > $CONTROL_PIPE
+#yay --noconfirm
 echo ${load} > $CONTROL_PIPE
 echo "INSTALLED" > $CONTROL_PIPE
 echo "+REPLICANT" > $CONTROL_PIPE
