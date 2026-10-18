@@ -350,6 +350,9 @@ void update_progress(screen* m_screen, int percentage){
   float bar_percentage = (float)percentage/100;
   int num_progress_bars = (int)((float)num_available_bars*bar_percentage);
   m_screen->num_bars = num_progress_bars;
+  char err[128];
+  sprintf(err, "%s%d %s%d", "num available: ", num_available_bars, "num bars: ", num_progress_bars);
+  crit(err);
 }
 
 int key(){
