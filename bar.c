@@ -300,9 +300,9 @@ void process_stdin(screen* m_screen, FILE * control_pipe, int pipe_updated, int 
 
       if (strlen(line) > 2){
 
-        if(strncmp("100", line, strlen(line)) == 0){
-          play_end(m_screen);
-        }
+//      if(strncmp("100", line, strlen(line)) == 0){
+//        play_end(m_screen);
+//      }
 
         crit("err_1");
 
@@ -332,6 +332,8 @@ void process_stdin(screen* m_screen, FILE * control_pipe, int pipe_updated, int 
     } else if(lead_char == '+'){
       load_header(m_screen, line);
       reprint(m_screen);
+    } else if (strncmp("PIPE_END", line, strlen(line)) == 0){
+      play_end(m_screen);
     } else if(lead_char > 51) {
       load_message(m_screen, line);
       reprint(m_screen);
