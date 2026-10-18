@@ -3,7 +3,10 @@
 endbar() {
   while pgrep loading-bar ; do
     sleep 1
-    echo > $CONTROL_PIPE
+    echo "PIPE_END" > $CONTROL_PIPE
+    echo "Still Running"
+  done
+  rm -f $CONTROL_PIPE
 }
  
 if [ -z ${CONTROL_PIPE+x} ] ; then
@@ -36,7 +39,8 @@ echo "+yay" > $CONTROL_PIPE
 echo "Updating System" > $CONTROL_PIPE
 echo "Updating System" > $CONTROL_PIPE
 echo "Updating System" > $CONTROL_PIPE
-yay --noconfirm
+#yay --noconfirm
 sleep .25
 echo 100 > $CONTROL_PIPE
+sleep 1
 endbar

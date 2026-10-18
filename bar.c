@@ -331,7 +331,7 @@ void process_stdin(screen* m_screen, FILE * control_pipe, int pipe_updated, int 
     } else if(lead_char == '+'){
       load_header(m_screen, line);
       reprint(m_screen);
-    } else if (strncmp("PIPE_END", line, strlen(line)) == 0){
+    } else if (strncmp(line, "PIPE_END", 7) == 0){
       play_end(m_screen);
     } else if(lead_char > 51) {
       load_message(m_screen, line);
@@ -350,9 +350,11 @@ void update_progress(screen* m_screen, int percentage){
   float bar_percentage = (float)percentage/100;
   int num_progress_bars = (int)((float)num_available_bars*bar_percentage);
   m_screen->num_bars = num_progress_bars;
-  char err[128];
-  sprintf(err, "%s%d %s%d", "num available: ", num_available_bars, "num bars: ", num_progress_bars);
-  crit(err);
+//if(percentage > 99){
+//  char err[128];
+//  sprintf(err, "%s%d %s%d", "num available: ", num_available_bars, "num bars: ", num_progress_bars);
+//  crit(err);
+//}
 }
 
 int key(){
@@ -485,7 +487,7 @@ void handle_args(int argc, char * argv[], screen* m_screen){
 
   int opt;
 
-  while ((opt = getopt(argc, argv, "l:E:n:dH:SC:")) != -1) {
+  while ((opt = getopt(argc, argv, "vl:E:n:dH:SC:")) != -1) {
       switch (opt) {
       case 'l':
           // TODO test these
@@ -493,6 +495,8 @@ void handle_args(int argc, char * argv[], screen* m_screen){
           if(optarg[0] != '/') crit("error: -l must be absolute path to log file");
           strncpy(config.input_log, optarg, 256);
           break;
+      case 'v':
+          version();
       case 'E':
           // TODO test these
 //        if(config.input_log[0] != 0) crit("-E not compatible with -l");
