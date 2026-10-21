@@ -1,8 +1,14 @@
 #!/usr/bin/env bash
 
+# TODO implement these
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+RESET='\033[0m'
+
 endbar() {
 
-  flashes=6
+  flashes=9
   while [ $flashes -gt 0 ]; do
     echo "0" > $CONTROL_PIPE
     sleep .05
@@ -10,7 +16,7 @@ endbar() {
     sleep .05
     flashes=$((flashes - 1))
   done
-
+  sleep .5
   while pgrep loading-bar >/dev/null ; do
     echo "PIPE_END" > $CONTROL_PIPE
     echo "Still Running"
@@ -22,6 +28,8 @@ endbar() {
 if [ -z ${CONTROL_PIPE+x} ] ; then
   CONTROL_PIPE="/tmp/load_pipe"
 fi
+
+# other config commands
 
 iterations=100
 load=0
@@ -37,10 +45,14 @@ while [ $iterations -gt 0 ]; do
   sleep .025
   if [ $iterations -gt 80 -o $iterations -lt 20 ] ;then
     echo "${load}" > $CONTROL_PIPE
+  elif [ $iterations -gt 60 ] ;then
+    echo "SPECIAL SAUCE"
+  else
+    echo "50" > $CONTROL_PIPE
   fi
   sleep .025
   if [ $iterations -gt 40 ] ;then
-    echo "LOGGING ${iterations}"
+    echo -e "${GREEN}LOGGING ${iterations}${RESET}"
   fi
   load=$((load + 1))
   iterations=$((iterations - 1))

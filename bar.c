@@ -179,7 +179,8 @@ void get_helped(){
   printf("  --help, -h       Get helped\n");
   printf("  -v, --version    Get version\n");
   printf("  -n [pipe_name]   Get control data from /tmp/[pipe_name]\n");
-  printf("  -E [executable]  execute [executable].\n");
+  printf("  -E [executable]  execute [executable]. Executable inherits CONTROL_PIPE\n");
+  printf("                   env var, while loading bar captures output log\n");
   printf("  -l [log_file]    Provide [log_file] from which to display logs, not compatible with -E\n");
   printf("  -d               Preserve [log_file]\n");
   printf("  -H               Overwrite default startup header string\n");
@@ -548,7 +549,7 @@ void launch(char * executable){
   int bar_pid = getpid();
 
   if (setenv("CONTROL_PIPE", config.pipe_file, 1) != 0) {
-    slap("setenv error");
+    crit("setenv error");
   }
 
   char input_log_path[256];
@@ -640,7 +641,6 @@ void log_print(screen* m_screen){
   int fd = open(config.input_log, O_RDONLY);
   if (fd == -1) return;
 
-
   off_t start = find_last_lines(fd, (size_t)rows);
 
   if (start < 0 || lseek(fd, start, SEEK_SET) == -1) {
@@ -667,9 +667,11 @@ void log_print(screen* m_screen){
   while (row <= rows && getline(&line, &capacity, fp) != -1) {
      // Avoid scrolling the window. Clip to its width.
     int len = strlen(line);
+    int print_row = row + 10;
     for(int i = 0; i < len - 1; i++){
       if(i > m_screen->cols - 5) break;
-      mvaddch(row + 10, 2 + i, line[i]);
+      if(print_row > m_screen->rows - 4) break;// sometimes prompted output tries to escape
+      mvaddch(print_row, 2 + i, line[i]);
     }
     row++;
   }
@@ -798,7 +800,7 @@ void animate_close(screen*  m_screen){
   wc = MenuBorder[4];
   setcchar(&cchar, &wc, 0, 0, NULL);
 
-    sleep_time = 4500;
+  sleep_time = 4500;
   for(int i = delta; i < cols/2; i+=3){
     refresh();
     usleep(sleep_time);
