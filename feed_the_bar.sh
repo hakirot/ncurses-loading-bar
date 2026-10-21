@@ -55,6 +55,7 @@ while [ $iterations -gt 0 ]; do
     echo -e "${GREEN}LOGGING ${iterations}${RESET}"
   elif [ $iterations -eq 39 ] ;then
     echo -e "LOGGING ${iterations}"
+#   echo "-CRIT critted!" > ${CONTROL_PIPE}
   fi
   load=$((load + 1))
   iterations=$((iterations - 1))

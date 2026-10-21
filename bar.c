@@ -316,7 +316,7 @@ void process_stdin(screen* m_screen, FILE * control_pipe, int pipe_updated, int 
     } else if(lead_char == '+'){
       load_header(m_screen, line);
       reprint(m_screen);
-    } else if(lead_char == '-' && strstr(line, "-CRIT") == 0){
+    } else if(lead_char == '-' && strstr(line, "-CRIT")){
       crit(line);
     } else if (strncmp(line, "PIPE_END", 7) == 0){
       play_end(m_screen);
@@ -744,8 +744,8 @@ void clear_log_box(int dim_y, int dim_x){
   wchar_t wc = L' ';
   cchar_t cchar;
   setcchar(&cchar, &wc, 0, 0, NULL);
-  for(int i = 0; i < dim_y - 1; i++){
-    for(int j = 0; j < dim_x - 1; j++){
+  for(int i = 0; i < dim_y; i++){
+    for(int j = 0; j < dim_x; j++){
       mvadd_wch(10 + i, 2 + j, &cchar);
     }
   }
