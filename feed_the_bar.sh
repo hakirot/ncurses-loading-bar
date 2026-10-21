@@ -53,6 +53,8 @@ while [ $iterations -gt 0 ]; do
   sleep .025
   if [ $iterations -gt 40 ] ;then
     echo -e "${GREEN}LOGGING ${iterations}${RESET}"
+  elif [ $iterations -eq 39 ] ;then
+    echo -e "LOGGING ${iterations}"
   fi
   load=$((load + 1))
   iterations=$((iterations - 1))

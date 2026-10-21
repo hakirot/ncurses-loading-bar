@@ -316,6 +316,8 @@ void process_stdin(screen* m_screen, FILE * control_pipe, int pipe_updated, int 
     } else if(lead_char == '+'){
       load_header(m_screen, line);
       reprint(m_screen);
+    } else if(lead_char == '-' && strstr(line, "-CRIT") == 0){
+      crit(line);
     } else if (strncmp(line, "PIPE_END", 7) == 0){
       play_end(m_screen);
     } else if(lead_char > 51) {
@@ -736,7 +738,6 @@ off_t find_last_lines(int fd, size_t n) {
 void clear_log_box(int dim_y, int dim_x){
 
   if(dim_y < 3){
-    //clear();
     return;
   }
 
