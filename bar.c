@@ -67,6 +67,7 @@ int main(int argc, char* argv[]){
     .fd = poll_pipe_fd,
     .events = POLLIN
   };
+
   int pipe_updated;
   int pipe_updated_ret = 0;
 
@@ -324,7 +325,9 @@ void process_stdin(screen* m_screen, FILE * control_pipe, int pipe_updated, int 
       load_message(m_screen, line);
       reprint(m_screen);
     }
-  } else if (log_updated) {
+  } 
+
+  if (log_updated) {
     log_print(m_screen);
   }
 
@@ -436,6 +439,35 @@ void play_end(screen* m_screen){
     if(flag == 0){
       mvprintw(m_screen->rows/2 - 1, m_screen->cols/2 - strlen(config.closing_message)/2, "%s", config.closing_message);
       flag++;
+
+//    L"╭╮╰╯─│";
+//    wchar_t wc = MenuBorder[0];
+      cchar_t cchar;
+
+      setcchar(&cchar, &MenuBorder[0], 0, 0, NULL);
+      mvadd_wch(m_screen->rows/2 - 2, m_screen->cols/2 - strlen(config.closing_message)/2 - 2, &cchar);
+
+      setcchar(&cchar, &MenuBorder[1], 0, 0, NULL);
+      mvadd_wch(m_screen->rows/2 - 2, m_screen->cols/2 + strlen(config.closing_message)/2 + 2, &cchar);
+
+      setcchar(&cchar, &MenuBorder[2], 0, 0, NULL);
+      mvadd_wch(m_screen->rows/2, m_screen->cols/2 - strlen(config.closing_message)/2 - 2, &cchar);
+
+      setcchar(&cchar, &MenuBorder[3], 0, 0, NULL);
+      mvadd_wch(m_screen->rows/2, m_screen->cols/2 + strlen(config.closing_message)/2 + 2, &cchar);
+
+      setcchar(&cchar, &MenuBorder[5], 0, 0, NULL);
+      mvadd_wch(m_screen->rows/2 - 1, m_screen->cols/2 - strlen(config.closing_message)/2 - 2, &cchar);
+      mvadd_wch(m_screen->rows/2 - 1, m_screen->cols/2 + strlen(config.closing_message)/2 + 2, &cchar);
+
+      setcchar(&cchar, &MenuBorder[4], 0, 0, NULL);
+      for(int i = 0; i < strlen(config.closing_message) + 2; i++){
+
+        mvadd_wch(m_screen->rows/2 - 2, m_screen->cols/2 - strlen(config.closing_message)/2 - 1 + i, &cchar);
+        mvadd_wch(m_screen->rows/2, m_screen->cols/2 - strlen(config.closing_message)/2 - 1 + i, &cchar);
+
+      }
+
     } else {
       clear();
       flag--;
@@ -569,7 +601,7 @@ void launch(char * executable){
   } else if (pid == 0) {
 
     // child process (executable) writes all output to input_log_path
-    // to be displayed by parent (loading bar)
+    // to be displayed by parent proc (loading bar)
     int fd = open(input_log_path, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
     dup2(fd, 1);
     dup2(fd, 2);
