@@ -444,21 +444,23 @@ void play_end(screen* m_screen){
 //    wchar_t wc = MenuBorder[0];
       cchar_t cchar;
 
+      int is_even = 0;
+      if((int)strlen(config.closing_message) % 2 == 0) is_even = 1;
       setcchar(&cchar, &MenuBorder[0], 0, 0, NULL);
       mvadd_wch(m_screen->rows/2 - 2, m_screen->cols/2 - strlen(config.closing_message)/2 - 2, &cchar);
 
       setcchar(&cchar, &MenuBorder[1], 0, 0, NULL);
-      mvadd_wch(m_screen->rows/2 - 2, m_screen->cols/2 + strlen(config.closing_message)/2 + 1, &cchar);
+      mvadd_wch(m_screen->rows/2 - 2, m_screen->cols/2 + strlen(config.closing_message)/2 + 2 - is_even, &cchar);
 
       setcchar(&cchar, &MenuBorder[2], 0, 0, NULL);
       mvadd_wch(m_screen->rows/2, m_screen->cols/2 - strlen(config.closing_message)/2 - 2, &cchar);
 
       setcchar(&cchar, &MenuBorder[3], 0, 0, NULL);
-      mvadd_wch(m_screen->rows/2, m_screen->cols/2 + strlen(config.closing_message)/2 + 1, &cchar);
+      mvadd_wch(m_screen->rows/2, m_screen->cols/2 + strlen(config.closing_message)/2 + 2 - is_even, &cchar);
 
       setcchar(&cchar, &MenuBorder[5], 0, 0, NULL);
       mvadd_wch(m_screen->rows/2 - 1, m_screen->cols/2 - strlen(config.closing_message)/2 - 2, &cchar);
-      mvadd_wch(m_screen->rows/2 - 1, m_screen->cols/2 + strlen(config.closing_message)/2 + 1, &cchar);
+      mvadd_wch(m_screen->rows/2 - 1, m_screen->cols/2 + strlen(config.closing_message)/2 + 2 - is_even, &cchar);
 
       setcchar(&cchar, &MenuBorder[4], 0, 0, NULL);
       for(int i = 0; i < strlen(config.closing_message) + 2; i++){
