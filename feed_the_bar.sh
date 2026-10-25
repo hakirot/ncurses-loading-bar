@@ -6,65 +6,69 @@ GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
 RESET='\033[0m'
 
+if [ -z ${CONTROL_PIPE+x} ] ; then
+  CONTROL_PIPE="/tmp/load_pipe"
+fi
+
+send_pipe () {
+  echo $1 > $CONTROL_PIPE
+}
+
 endbar() {
 
   flashes=9
   while [ $flashes -gt 0 ]; do
-    echo "0" > $CONTROL_PIPE
+    send_pipe "0"
     sleep .05
-    echo "100" > $CONTROL_PIPE
+    send_pipe "100"
     sleep .05
     flashes=$((flashes - 1))
   done
   sleep .5
   while pgrep loading-bar >/dev/null ; do
-    echo "PIPE_END" > $CONTROL_PIPE
+    send_pipe "PIPE_END"
     echo "Still Running"
   done
   rm -f $CONTROL_PIPE
   # Run post ops
 }
 
-if [ -z ${CONTROL_PIPE+x} ] ; then
-  CONTROL_PIPE="/tmp/load_pipe"
-fi
-
 # other config commands
 
 iterations=100
 load=0
-while [ $iterations -gt 0 ]; do
-  if [ $iterations -eq 90 ]; then
-    echo "+INITIALIZING" > $CONTROL_PIPE
-  elif [ $iterations -eq 60 ]; then
-    echo "+ALTERING" > $CONTROL_PIPE
-  elif [ $iterations -eq 30 ]; then
-    echo "+FINISHING" > $CONTROL_PIPE
-  fi
-  echo "CONFIGURING ${load}" > $CONTROL_PIPE
-  sleep .025
-  if [ $iterations -gt 80 -o $iterations -lt 20 ] ;then
-    echo "${load}" > $CONTROL_PIPE
-  elif [ $iterations -gt 60 ] ;then
-    echo "SPECIAL SAUCE"
-  else
-    echo "50" > $CONTROL_PIPE
-  fi
-  sleep .025
-  if [ $iterations -gt 40 ] ;then
-    echo -e "${GREEN}LOGGING ${iterations}${RESET}"
-  elif [ $iterations -eq 39 ] ;then
-    echo -e "LOGGING ${iterations}"
-#   echo "-CRIT critted!" > ${CONTROL_PIPE}
-  fi
-  load=$((load + 1))
-  iterations=$((iterations - 1))
-done
+#while [ $iterations -gt 0 ]; do
+#  if [ $iterations -eq 90 ]; then
+#    send_pipe "+INITIALIZING"
+#  elif [ $iterations -eq 60 ]; then
+#    send_pipe "+ALTERING"
+#  elif [ $iterations -eq 30 ]; then
+#    send_pipe "+FINISHING"
+#  fi
+#  send_pipe "CONFIGURING ${load}"
+#  sleep .025
+#  if [ $iterations -gt 80 -o $iterations -lt 20 ] ; then
+#    send_pipe "${load}"
+#  elif [ $iterations -gt 60 ] ;then
+#    echo "SPECIAL SAUCE"
+#  else
+#    send_pipe "50"
+#  fi
+#  sleep .025
+#  if [ $iterations -gt 40 ] ;then
+#    echo -e "${GREEN}LOGGING ${iterations}${RESET}"
+#  elif [ $iterations -eq 39 ] ;then
+#    echo -e "LOGGING ${iterations}"
+##   send_pipe "-CRIT critted!"
+#  fi
+#  load=$((load + 1))
+#  iterations=$((iterations - 1))
+#done
 
-echo "+yay" > $CONTROL_PIPE
+send_pipe "+yay"
 #yay --noconfirm
-echo ${load} > $CONTROL_PIPE
-echo "INSTALLED" > $CONTROL_PIPE
-echo "+REPLICANT" > $CONTROL_PIPE
-echo "100" > $CONTROL_PIPE
+send_pipe ${load}
+send_pipe "INSTALLED"
+send_pipe "+REPLICANT"
+send_pipe "100"
 endbar

@@ -424,7 +424,7 @@ void play_end(screen* m_screen){
   refresh();
 
   if(config.closing_message[0] == 0){
-    strncpy(config.closing_message, "- = COMPLETE = -", 256);
+    strncpy(config.closing_message, "COMPLETE", 256);
   }
 
   int flag = 0;
@@ -448,24 +448,22 @@ void play_end(screen* m_screen){
       mvadd_wch(m_screen->rows/2 - 2, m_screen->cols/2 - strlen(config.closing_message)/2 - 2, &cchar);
 
       setcchar(&cchar, &MenuBorder[1], 0, 0, NULL);
-      mvadd_wch(m_screen->rows/2 - 2, m_screen->cols/2 + strlen(config.closing_message)/2 + 2, &cchar);
+      mvadd_wch(m_screen->rows/2 - 2, m_screen->cols/2 + strlen(config.closing_message)/2 + 1, &cchar);
 
       setcchar(&cchar, &MenuBorder[2], 0, 0, NULL);
       mvadd_wch(m_screen->rows/2, m_screen->cols/2 - strlen(config.closing_message)/2 - 2, &cchar);
 
       setcchar(&cchar, &MenuBorder[3], 0, 0, NULL);
-      mvadd_wch(m_screen->rows/2, m_screen->cols/2 + strlen(config.closing_message)/2 + 2, &cchar);
+      mvadd_wch(m_screen->rows/2, m_screen->cols/2 + strlen(config.closing_message)/2 + 1, &cchar);
 
       setcchar(&cchar, &MenuBorder[5], 0, 0, NULL);
       mvadd_wch(m_screen->rows/2 - 1, m_screen->cols/2 - strlen(config.closing_message)/2 - 2, &cchar);
-      mvadd_wch(m_screen->rows/2 - 1, m_screen->cols/2 + strlen(config.closing_message)/2 + 2, &cchar);
+      mvadd_wch(m_screen->rows/2 - 1, m_screen->cols/2 + strlen(config.closing_message)/2 + 1, &cchar);
 
       setcchar(&cchar, &MenuBorder[4], 0, 0, NULL);
       for(int i = 0; i < strlen(config.closing_message) + 2; i++){
-
         mvadd_wch(m_screen->rows/2 - 2, m_screen->cols/2 - strlen(config.closing_message)/2 - 1 + i, &cchar);
         mvadd_wch(m_screen->rows/2, m_screen->cols/2 - strlen(config.closing_message)/2 - 1 + i, &cchar);
-
       }
 
     } else {
@@ -803,11 +801,6 @@ void animate_close(screen*  m_screen){
   int dim_x = cols;
 
   int delta = 0;
-
-  int r = 0;
-  int l = 0;
-  int u = 0;
-  int d = 0;
 
   cchar_t cchar;
   wchar_t wc;
