@@ -62,6 +62,8 @@ int main(int argc, char* argv[]){
   }
   reprint(&m_screen);
 
+  // These pollfds need to be initialized and checking files before animations
+  // or the subroutine writes to pipe before loading-bar knows about it
   int poll_pipe_fd = fileno(config.pipe_fd);
   struct pollfd pfd = {
     .fd = poll_pipe_fd,
