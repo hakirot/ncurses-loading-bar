@@ -105,13 +105,14 @@ int main(int argc, char* argv[]){
   while(1){
 
     pipe_updated = 0;
+    log_updated  = 0;
+
     pipe_updated_ret = poll(&pfd, 1, 0);
     if (pipe_updated_ret > 0 && (pfd.revents & POLLIN)) {
       pipe_updated = 1;
     }
 
     if(log_exists){
-      log_updated = 0;
       log_updated_ret = poll(&lfd, 1, 0);
       if (log_updated_ret > 0 && (lfd.revents & POLLIN)) {
         log_updated = 1;
@@ -119,11 +120,8 @@ int main(int argc, char* argv[]){
     }
 
     check_size(&m_screen);
-
     process_stdin(&m_screen, config.pipe_fd, pipe_updated, log_updated);
-    key();
-
-    usleep(20000);
+    usleep(10000);
   }
 
   _quit(0);
@@ -354,10 +352,6 @@ void update_progress(screen* m_screen, int percentage){
 //}
 }
 
-int key(){
-
-}
-
 void _quit(int exit_code){
   endwin();
   fclose(config.pipe_fd);
@@ -524,15 +518,12 @@ void handle_args(int argc, char * argv[], screen* m_screen){
       case 'v':
           version();
       case 'E':
-          // TODO test these
-//        if(config.input_log[0] != 0) crit("-E not compatible with -l");
-
-          char executable[256];
+          char executable[256] = {'\0'};
           if(optarg[0] != '/'){
             char * env = getenv("PWD");
             sprintf(executable, "%s/%s", env, optarg);
             if (access(executable, F_OK) != 0){
-              crit("inaccessible executable");
+              crit("inaccessible executable in -E [executable]");
             } else {
               // TODO check executable perms
               strncpy(config.executable, executable, 256);
