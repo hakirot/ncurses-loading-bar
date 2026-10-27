@@ -93,7 +93,7 @@ int main(int argc, char* argv[]){
   int log_updated_ret = 0;
 
   launch_window(&m_screen);
-  if(config.executable[0] != 0) launch(config.executable); // possible sleep
+  if(config.executable[0] != 0) launch(config.executable);
 
   if(config.input_log[0] != 0 && config.skip_log_startup == false) {
     print_header(&m_screen);
