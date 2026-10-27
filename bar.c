@@ -39,7 +39,7 @@ int main(int argc, char* argv[]){
   mkfifo(config.pipe_file, 0666);
 
   // TODO test whether this block is needed
-  int control_fd = open(config.pipe_file, O_RDWR);
+  int control_fd = open(config.pipe_file, O_RDONLY | O_NONBLOCK );
   if (control_fd == -1) {
       perror("open");
       return 1;
@@ -58,7 +58,8 @@ int main(int argc, char* argv[]){
   int poll_pipe_fd = fileno(config.pipe_fd);
   struct pollfd pfd = {
     .fd = poll_pipe_fd,
-    .events = POLLIN
+    .events = POLLIN,
+    .revents = 0
   };
 
   int pipe_updated;
@@ -85,6 +86,7 @@ int main(int argc, char* argv[]){
     poll_log_fd = fileno(config.log_fd);
     lfd.fd = poll_log_fd;
     lfd.events = POLLIN;
+    lfd.revents = 0;
   }
 
   int log_updated;
