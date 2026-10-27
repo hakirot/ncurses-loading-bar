@@ -62,7 +62,7 @@ int main(int argc, char* argv[]){
   };
 
   int pipe_updated;
-  int pipe_updated_ret = 1;
+  int pipe_updated_ret = poll(&pfd, 1, 0);
 
   if(config.executable[0] != 0) launch(config.executable); // possible sleep
 
@@ -90,7 +90,7 @@ int main(int argc, char* argv[]){
   }
 
   int log_updated;
-  int log_updated_ret = 1;
+  int log_updated_ret = poll(&lfd, 1, 0);
 
   int init_run = 1;
   while(1){
