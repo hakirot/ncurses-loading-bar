@@ -93,14 +93,12 @@ int main(int argc, char* argv[]){
   int init_run = 1;
   while(1){
 
-    pipe_updated = 0;
     pipe_updated_ret = poll(&pfd, 1, 0);
     if (pipe_updated_ret > 0 && (pfd.revents & POLLIN)) {
       pipe_updated = 1;
     }
 
     if(log_exists){
-      log_updated = 0;
       log_updated_ret = poll(&lfd, 1, 0);
       if (log_updated_ret > 0 && (lfd.revents & POLLIN)) {
         log_updated = 1;
