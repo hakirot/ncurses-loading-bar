@@ -90,7 +90,16 @@ int main(int argc, char* argv[]){
   int log_updated;
   int log_updated_ret = 0;
 
-  int init_run = 1;
+  launch_window(&m_screen);
+  if(config.executable[0] != 0) launch(config.executable); // possible sleep
+
+  if(config.input_log[0] != 0 && config.skip_log_startup == false) {
+    print_header(&m_screen);
+    print_message(&m_screen);
+    animate_log_open(&m_screen);
+  }
+  reprint(&m_screen);
+
   while(1){
 
     pipe_updated = 0;
@@ -105,21 +114,6 @@ int main(int argc, char* argv[]){
       if (log_updated_ret > 0 && (lfd.revents & POLLIN)) {
         log_updated = 1;
       }
-    }
-
-    if(init_run) {
-      pipe_updated = 1;
-      log_updated = 1;
-      launch_window(&m_screen);
-      if(config.executable[0] != 0) launch(config.executable); // possible sleep
-
-      if(config.input_log[0] != 0 && config.skip_log_startup == false) {
-        print_header(&m_screen);
-        print_message(&m_screen);
-        animate_log_open(&m_screen);
-      }
-      reprint(&m_screen);
-      init_run--;
     }
 
     check_size(&m_screen);
