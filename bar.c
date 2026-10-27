@@ -614,6 +614,7 @@ void launch(char * executable){
     dup2(fd, 2);
     close(fd);
 
+    sleep(1);
     execl(executable, executable);
     perror("execl");
     crit("execl critical error :|");
