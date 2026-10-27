@@ -37,34 +37,34 @@ endbar() {
 
 iterations=100
 load=0
-#while [ $iterations -gt 0 ]; do
-#  if [ $iterations -eq 90 ]; then
-#    send_pipe "+INITIALIZING"
-#  elif [ $iterations -eq 60 ]; then
-#    send_pipe "+ALTERING"
-#  elif [ $iterations -eq 30 ]; then
-#    send_pipe "+FINISHING"
-#  fi
-#  send_pipe "CONFIGURING ${load}"
-#  sleep .025
-#  if [ $iterations -gt 80 -o $iterations -lt 20 ] ; then
-#    send_pipe "${load}"
-#  elif [ $iterations -gt 60 ] ;then
-#    echo "SPECIAL SAUCE"
-#  else
-#    send_pipe "50"
-#  fi
-#  sleep .025
-#  if [ $iterations -gt 40 ] ;then
-#    echo -e "${GREEN}LOGGING ${iterations}${RESET}"
-#  elif [ $iterations -eq 39 ] ;then
-#    echo -e "LOGGING ${iterations}"
-##   send_pipe "-CRIT critted!"
-#  fi
-#  load=$((load + 1))
-#  iterations=$((iterations - 1))
-#done
-
+while [ $iterations -gt 0 ]; do
+  if [ $iterations -eq 90 ]; then
+    send_pipe "+INITIALIZING"
+  elif [ $iterations -eq 60 ]; then
+    send_pipe "+ALTERING"
+  elif [ $iterations -eq 30 ]; then
+    send_pipe "+FINISHING"
+  fi
+  send_pipe "CONFIGURING ${load}"
+  sleep .025
+  if [ $iterations -gt 80 -o $iterations -lt 20 ] ; then
+    send_pipe "${load}"
+  elif [ $iterations -gt 60 ] ;then
+    echo "SPECIAL SAUCE"
+  else
+    send_pipe "50"
+  fi
+  sleep .025
+  if [ $iterations -gt 40 ] ; then
+    echo -e "${GREEN}LOGGING ${iterations}${RESET}"
+  elif [ $iterations -eq 39 ] ; then
+    echo -e "LOGGING ${iterations}"
+#   send_pipe "-CRIT critted!"
+  fi
+  load=$((load + 1))
+  iterations=$((iterations - 1))
+done
+ 
 send_pipe "+yay"
 #yay --noconfirm
 send_pipe ${load}

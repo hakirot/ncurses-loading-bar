@@ -9,6 +9,7 @@
 #include <time.h>
 #include <fcntl.h>
 #include <poll.h>
+#include <errno.h>
 #include <sys/time.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -46,24 +47,14 @@ int main(int argc, char* argv[]){
 
   config.pipe_fd = fdopen(control_fd, "r");
   if (config.pipe_fd == NULL) {
-      perror("fdopen");
+      perror("fdopen err");
       close(control_fd);
       return 1;
   }
 
   setlocale(LC_ALL, "");
-  launch_window(&m_screen);
-  if(config.executable[0] != 0) launch(config.executable); // possible sleep
-  if(config.input_log[0] != 0 && config.skip_log_startup == false) {
-    //bar_borders(white, &m_screen);
-    print_header(&m_screen);
-    print_message(&m_screen);
-    animate_log_open(&m_screen);
-  }
-  reprint(&m_screen);
-
   // These pollfds need to be initialized and checking files before animations
-  // or the subroutine writes to pipe before loading-bar knows about it
+
   int poll_pipe_fd = fileno(config.pipe_fd);
   struct pollfd pfd = {
     .fd = poll_pipe_fd,
@@ -73,15 +64,18 @@ int main(int argc, char* argv[]){
   int pipe_updated;
   int pipe_updated_ret = 0;
 
+  if(config.executable[0] != 0) launch(config.executable); // possible sleep
+
   int log_exists = 0;
   if(config.input_log[0] != 0){
     log_exists = 1;
   }
 
   if(log_exists){
-    config.log_fd = fopen(config.input_log, "r");
+    config.log_fd = fopen(config.input_log, "wr");
     if (config.log_fd == NULL) {
-      crit("fdopen");
+      perror(strerror(errno));
+      crit("fdopen config.log_fd");
       close(control_fd);
     }
   }
@@ -98,6 +92,7 @@ int main(int argc, char* argv[]){
   int log_updated;
   int log_updated_ret = 0;
 
+  int init_run = 1;
   while(1){
 
     pipe_updated = 0;
@@ -112,6 +107,18 @@ int main(int argc, char* argv[]){
       if (log_updated_ret > 0 && (lfd.revents & POLLIN)) {
         log_updated = 1;
       }
+    }
+
+    if(init_run) {
+      launch_window(&m_screen);
+      if(config.input_log[0] != 0 && config.skip_log_startup == false) {
+        print_header(&m_screen);
+        print_message(&m_screen);
+        animate_log_open(&m_screen);
+      }
+
+      reprint(&m_screen);
+      init_run--;
     }
 
     check_size(&m_screen);
@@ -607,7 +614,6 @@ void launch(char * executable){
     int fd = open(input_log_path, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
     dup2(fd, 1);
     dup2(fd, 2);
-
     close(fd);
 
     execl(executable, executable);
