@@ -95,6 +95,19 @@ int main(int argc, char* argv[]){
   int init_run = 1;
   while(1){
 
+    if(init_run) {
+      launch_window(&m_screen);
+      if(config.input_log[0] != 0 && config.skip_log_startup == false) {
+        print_header(&m_screen);
+        print_message(&m_screen);
+        animate_log_open(&m_screen);
+      }
+      reprint(&m_screen);
+      init_run--;
+    }
+
+    check_size(&m_screen);
+
     pipe_updated = 0;
     pipe_updated_ret = poll(&pfd, 1, 0);
     if (pipe_updated_ret > 0 && (pfd.revents & POLLIN)) {
@@ -109,19 +122,6 @@ int main(int argc, char* argv[]){
       }
     }
 
-    if(init_run) {
-      launch_window(&m_screen);
-      if(config.input_log[0] != 0 && config.skip_log_startup == false) {
-        print_header(&m_screen);
-        print_message(&m_screen);
-        animate_log_open(&m_screen);
-      }
-
-      reprint(&m_screen);
-      init_run--;
-    }
-
-    check_size(&m_screen);
     process_stdin(&m_screen, config.pipe_fd, pipe_updated, log_updated);
     key();
 
