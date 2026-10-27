@@ -108,6 +108,8 @@ int main(int argc, char* argv[]){
     }
 
     if(init_run) {
+      pipe_updated = 1;
+      log_updated = 1;
       launch_window(&m_screen);
       if(config.executable[0] != 0) launch(config.executable); // possible sleep
 
