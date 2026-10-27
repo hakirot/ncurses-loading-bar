@@ -62,9 +62,7 @@ int main(int argc, char* argv[]){
   };
 
   int pipe_updated;
-  int pipe_updated_ret = poll(&pfd, 1, 0);
-
-  if(config.executable[0] != 0) launch(config.executable); // possible sleep
+  int pipe_updated_ret = 0;
 
   int log_exists = 0;
   if(config.input_log[0] != 0){
@@ -90,23 +88,10 @@ int main(int argc, char* argv[]){
   }
 
   int log_updated;
-  int log_updated_ret = poll(&lfd, 1, 0);
+  int log_updated_ret = 0;
 
   int init_run = 1;
   while(1){
-
-    if(init_run) {
-      launch_window(&m_screen);
-      if(config.input_log[0] != 0 && config.skip_log_startup == false) {
-        print_header(&m_screen);
-        print_message(&m_screen);
-        animate_log_open(&m_screen);
-      }
-      reprint(&m_screen);
-      init_run--;
-    }
-
-    check_size(&m_screen);
 
     pipe_updated = 0;
     pipe_updated_ret = poll(&pfd, 1, 0);
@@ -121,6 +106,21 @@ int main(int argc, char* argv[]){
         log_updated = 1;
       }
     }
+
+    if(init_run) {
+      launch_window(&m_screen);
+      if(config.executable[0] != 0) launch(config.executable); // possible sleep
+
+      if(config.input_log[0] != 0 && config.skip_log_startup == false) {
+        print_header(&m_screen);
+        print_message(&m_screen);
+        animate_log_open(&m_screen);
+      }
+      reprint(&m_screen);
+      init_run--;
+    }
+
+    check_size(&m_screen);
 
     process_stdin(&m_screen, config.pipe_fd, pipe_updated, log_updated);
     key();
