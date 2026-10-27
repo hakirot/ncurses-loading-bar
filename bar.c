@@ -163,7 +163,7 @@ void launch_window(screen* m_screen){
   nodelay(stdscr, TRUE);
   keypad(stdscr, TRUE);
   curs_set(FALSE);
-  clear();
+//clear();
 
   int rows, cols = 0;
   getmaxyx(stdscr, rows, cols);
@@ -398,7 +398,7 @@ void load_message(screen * m_screen, char* line){
 
 void reprint(screen* m_screen){
 
-  clear();
+//clear();
   bar_borders(white, m_screen);
 
   if(config.input_log[0] != 0) {
