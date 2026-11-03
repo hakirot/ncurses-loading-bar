@@ -13,7 +13,7 @@ TARGET  = loading-bar
 all: loading-bar
 
 loading-bar: $(OBJ)
-	$(LINK) $(LFLAGS) -o $(TARGET) $(OBJ)
+	$(LINK) -DNCURSES_WIDECHAR -o $(TARGET) $(OBJ) -lncursesw
 
 clean:
 	rm -f $(TARGET) $(OBJ)

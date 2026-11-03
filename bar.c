@@ -174,14 +174,14 @@ void launch_window(screen* m_screen){
 
 void version(){
   printf("%s %s \n", PROGRAM_NAME, PROGRAM_VERSION);
-  printf("%s \n", "Visit hakipaks.org/snippets#loading-bar for more details");
+  printf("%s \n", "Visit hakipaks.org/loading-bar for more details");
   exit(0);
 }
 
 void get_helped(){
   printf("Usage: %s [INPUT_FILE]\n\n", "bar");
   printf("echo single-line STRINGS to INPUT_FILE followed by INT to display load percentage in this program\n\n");
-  printf("Visit \x1b[31mhakipaks.org/snippets\x1b[0m for detailed docs\n\n");
+  printf("Visit \x1b[31mhakipaks.org/loading-bar\x1b[0m for detailed docs\n\n");
   printf("  --help, -h       Get helped\n");
   printf("  -v, --version    Get version\n");
   printf("  -n [pipe_name]   Get control data from /tmp/[pipe_name]\n");
@@ -356,8 +356,8 @@ void _quit(int exit_code){
   endwin();
   fclose(config.pipe_fd);
   remove(config.pipe_file);
+  if(config.log_fd != 0) fclose(config.log_fd);
   if(config.remove_input_log) remove(config.input_log);
-  if(config.input_log[0] != 0) fclose(config.log_fd);
   exit(exit_code);
 }
 
@@ -421,6 +421,7 @@ void reprint(screen* m_screen){
 }
 
 void play_end(screen* m_screen){
+
   clear();
   refresh();
 
@@ -479,6 +480,7 @@ void play_end(screen* m_screen){
   mvprintw(m_screen->rows/2 - 1, m_screen->cols/2 - strlen(config.closing_message)/2, "%s", config.closing_message);
   refresh();
   usleep(500000);
+
   _quit(0);
 }
 
@@ -512,7 +514,7 @@ void handle_args(int argc, char * argv[], screen* m_screen){
       case 'l':
           // TODO test these
 //        if(config.executable[0] != 0) crit("-E not compatible with -l");
-          if(optarg[0] != '/') crit("error: -l must be absolute path to log file");
+          if(optarg[0] != '/') crit("error: -l must be an absolute path to a log file");
           strncpy(config.input_log, optarg, 256);
           break;
       case 'v':
@@ -709,6 +711,7 @@ void log_print(screen* m_screen){
   }
 
   free(line);
+  close(fd);
   fclose(fp);
 
   refresh();

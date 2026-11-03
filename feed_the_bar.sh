@@ -27,7 +27,7 @@ endbar() {
   sleep .5
   while pgrep loading-bar >/dev/null ; do
     send_pipe "PIPE_END"
-    echo "Still Running"
+#   echo "Still Running"
   done
   rm -f $CONTROL_PIPE
   # Run post ops
