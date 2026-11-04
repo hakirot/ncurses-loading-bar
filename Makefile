@@ -1,6 +1,6 @@
 # Makefile #
 
-VERSION = 0.1.0
+VERSION = 0.0.1
 
 SRC = bar.c
 OBJ = $(SRC:.c=.o)

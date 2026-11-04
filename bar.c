@@ -28,9 +28,13 @@ int main(int argc, char* argv[]){
   m_screen.cache = 0;
   m_screen.num_bars = 0;
   config.remove_input_log = true;
-//char message[256];
 //strncpy(m_screen.message, message, 256);
-  strncpy(m_screen.header, "ncurses-loading-bar 0.1.0", 256);
+
+  char init_header[64] = {'\0'};
+  sprintf(init_header, "%s%s", "loading-bar-", PROGRAM_VERSION);
+  strncpy(m_screen.header, init_header, 256);
+
+  // todo implement
   quit_counter = 0;
 
   handle_args(argc, argv, &m_screen);
@@ -185,7 +189,7 @@ void get_helped(){
   printf("  --help, -h       Get helped\n");
   printf("  -v, --version    Get version\n");
   printf("  -n [pipe_name]   Specify [pipe_name] to recieve control data from /tmp/[pipe_name]\n");
-  printf("  -E [executable]  execute [executable]. Executable inherits CONTROL_PIPE\n");
+  printf("  -E [program]  execute [program]. Program inherits CONTROL_PIPE\n");
   printf("                   env var, while loading bar captures output log\n");
   printf("  -l [log_file]    Provide absolute path to [log_file] from which to display logs\n");
   printf("  -d               Preserve log_file when loading-bar exits\n");

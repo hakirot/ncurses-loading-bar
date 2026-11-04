@@ -1,5 +1,5 @@
 #define PROGRAM_NAME "ncurses-loading-bar"
-#define PROGRAM_VERSION "0.1.0"
+#define PROGRAM_VERSION "0.0.1"
 
 #ifndef BAR_H
 #define BAR_H
