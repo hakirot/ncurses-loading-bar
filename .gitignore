@@ -2,3 +2,4 @@ sara
 *.o
 loading-bar
 *.diff
+dist/
