@@ -1,6 +1,13 @@
 #!/usr/bin/env bash
 
-# TODO implement these
+# EXAMPLE [executable] for loading-bar
+#
+# DEMO LAUNCH COMMAND:
+#   ./loading-bar -E feed_the_bar.sh \
+#   -H  "LOADING-BAR EXAMPLE"
+#   -C  "DEMONSTRATION ACHIEVED",
+
+# TODO implement terminal escape code handling in loading-bar
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
@@ -50,15 +57,16 @@ while [ $iterations -gt 0 ]; do
   if [ $iterations -gt 80 -o $iterations -lt 20 ] ; then
     send_pipe "${load}"
   elif [ $iterations -gt 60 ] ;then
-    echo "SPECIAL SAUCE"
+    echo "EXTRA SAUCE"
   else
     send_pipe "50"
   fi
   sleep .025
   if [ $iterations -gt 40 ] ; then
-    echo -e "${GREEN}LOGGING ${iterations}${RESET}"
+#   echo -e "${GREEN}LOGGING ${iterations}${RESET}" # TODO implement escape-code handling
+    echo "LOGGING ${iterations}"
   elif [ $iterations -eq 39 ] ; then
-    echo -e "LOGGING ${iterations}"
+    echo "LOGGING ${iterations}"
 #   send_pipe "-CRIT critted!"
   fi
   load=$((load + 1))
@@ -68,7 +76,7 @@ done
 send_pipe "+yay"
 #yay --noconfirm
 send_pipe ${load}
-send_pipe "INSTALLED"
-send_pipe "+REPLICANT"
+send_pipe "+DEMO"
+send_pipe "COMPLETED"
 send_pipe "100"
 endbar

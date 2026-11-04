@@ -184,14 +184,14 @@ void get_helped(){
   printf("Visit \x1b[31mhakipaks.org/loading-bar\x1b[0m for detailed docs\n\n");
   printf("  --help, -h       Get helped\n");
   printf("  -v, --version    Get version\n");
-  printf("  -n [pipe_name]   Get control data from /tmp/[pipe_name]\n");
+  printf("  -n [pipe_name]   Specify [pipe_name] to recieve control data from /tmp/[pipe_name]\n");
   printf("  -E [executable]  execute [executable]. Executable inherits CONTROL_PIPE\n");
   printf("                   env var, while loading bar captures output log\n");
-  printf("  -l [log_file]    Provide [log_file] from which to display logs, not compatible with -E\n");
-  printf("  -d               Preserve [log_file]\n");
-  printf("  -H               Overwrite default startup header string\n");
+  printf("  -l [log_file]    Provide absolute path to [log_file] from which to display logs\n");
+  printf("  -d               Preserve log_file when loading-bar exits\n");
+  printf("  -H               Overwrite header string at start\n");
   printf("  -S               Skip log startup animation\n");
-  printf("  -C               Specify closing message\n");
+  printf("  -C [message]     Specify closing message\n");
   exit(0);
 }
 

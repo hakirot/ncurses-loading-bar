@@ -7,7 +7,6 @@ OBJ = $(SRC:.c=.o)
 
 CC			= gcc
 LINK    = gcc
-LFLAGS  = -lncursesw -DNCURSES_WIDECHAR=1
 TARGET  = loading-bar
 
 all: loading-bar
@@ -19,5 +18,4 @@ clean:
 	rm -f $(TARGET) $(OBJ)
 
 bar.o: bar.c bar.h
-	$(CC) $(LFLAGS) -c -o bar.o bar.c
-
+	$(CC) -DNCURSES_WIDECHAR -c -o bar.o bar.c -lncursesw
